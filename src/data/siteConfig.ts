@@ -1,0 +1,68 @@
+export const SITE_CONFIG = {
+  name: 'AVNIVO',
+  legalName: 'AVNIVO Shopping Discovery',
+  tagline: 'Smart Living, Better Home.',
+  description: 'India’s premier Home & Kitchen shopping discovery platform. Explore verified reviews, unbiased product comparisons, and curated buying guides for modern Indian homes.',
+  url: 'https://avnivo.in',
+  targetMarket: 'India',
+  currency: {
+    symbol: '₹',
+    code: 'INR',
+    name: 'Indian Rupee',
+  },
+  colors: {
+    navy: '#102F59',
+    orange: '#FF7900',
+    white: '#FFFFFF',
+  },
+  contact: {
+    email: 'support@avnivo.in',
+    pressEmail: 'editorial@avnivo.in',
+    businessInquiry: 'partners@avnivo.in',
+  },
+  social: {
+    facebook: 'https://facebook.com/avnivo.home',
+    instagram: 'https://instagram.com/avnivo.home',
+    twitter: 'https://twitter.com/avnivo_home',
+    pinterest: 'https://pinterest.com/avnivo',
+    youtube: 'https://youtube.com/@avnivo',
+  },
+  amazonAffiliateTag: 'avnivo-demo-21',
+  disclosureSummary: 'AVNIVO is an independent shopping discovery and affiliate recommendation platform. We participate in the Amazon Associates Program and other merchant affiliate programs. When you purchase through our links, we may earn an affiliate commission at no extra cost to you.',
+  navLinks: [
+    { label: 'Home', href: '/' },
+    { label: 'Categories', href: '/categories' },
+    { label: 'Reviews', href: '/reviews' },
+    { label: 'Compare', href: '/compare' },
+    { label: 'Buying Guides', href: '/buying-guides' },
+    { label: 'About Us', href: '/about' },
+    { label: 'Contact', href: '/contact' },
+  ],
+  footerLinks: {
+    shopping: [
+      { label: 'All Categories', href: '/categories' },
+      { label: 'Featured Products', href: '/#featured' },
+      { label: 'Deals & Offers', href: '/#deals' },
+      { label: 'Product Reviews', href: '/reviews' },
+      { label: 'Product Comparison', href: '/compare' },
+      { label: 'Buying Guides', href: '/buying-guides' },
+    ],
+    categories: [
+      { label: 'Kitchen Gadgets', href: '/categories/kitchen-gadgets' },
+      { label: 'Cookware', href: '/categories/cookware' },
+      { label: 'Kitchen Storage', href: '/categories/kitchen-storage-organization' },
+      { label: 'Home Appliances', href: '/categories/home-appliances' },
+      { label: 'Home Improvement', href: '/categories/home-improvement' },
+      { label: 'Cleaning Products', href: '/categories/cleaning-products' },
+    ],
+    company: [
+      { label: 'About AVNIVO', href: '/about' },
+      { label: 'Contact Us', href: '/contact' },
+      { label: 'Affiliate Disclosure', href: '/affiliate-disclosure' },
+      { label: 'Privacy Policy', href: '/privacy-policy' },
+      { label: 'Terms & Conditions', href: '/terms' },
+      { label: 'Admin Portal', href: '/admin' },
+    ],
+  },
+};
+
