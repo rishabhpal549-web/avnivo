@@ -8,6 +8,7 @@
     "start": "next start"
   },
   "dependencies": {
+    "@vercel/analytics": "^2.0.1",
     "clsx": "^2.1.1",
     "isomorphic-git": "^1.44.13",
     "lucide-react": "^0.468.0",
