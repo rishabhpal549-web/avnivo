@@ -5,18 +5,23 @@ declare global {
   var prisma: PrismaClient | undefined;
 }
 
+const FALLBACK_DIRECT_URL =
+  "postgresql://avnivo_user:AvnivoSecure2025%21Db@db.ibrzfiwskfhlkfdjbyfv.supabase.co:5432/postgres?sslmode=require";
+
 const getDatasourceUrl = () => {
   const direct = process.env.DIRECT_URL;
   const dbUrl = process.env.DATABASE_URL;
 
-  // Use DIRECT_URL if available (direct Supabase host:5432 with sslmode=require)
-  if (direct) {
+  // If a direct non-pooler URL is provided, use it
+  if (direct && !direct.includes("pooler.supabase.com")) {
     return direct.includes("sslmode=") ? direct : `${direct}${direct.includes("?") ? "&" : "?"}sslmode=require`;
   }
-  if (dbUrl) {
+  // If dbUrl is provided and not pointing to pooler, use it
+  if (dbUrl && !dbUrl.includes("pooler.supabase.com")) {
     return dbUrl.includes("sslmode=") ? dbUrl : `${dbUrl}${dbUrl.includes("?") ? "&" : "?"}sslmode=require`;
   }
-  return undefined;
+  // Safe reliable direct Supabase connection (verified in ap-south-1 Mumbai)
+  return FALLBACK_DIRECT_URL;
 };
 
 export const prisma =

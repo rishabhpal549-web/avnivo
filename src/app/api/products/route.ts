@@ -364,6 +364,6 @@ export async function GET(req: NextRequest) {
     });
   } catch (err: any) {
     console.error("Products API error:", err);
-    return NextResponse.json({ error: "Failed to fetch products" }, { status: 500 });
+    return NextResponse.json({ error: "Failed to fetch products", details: err.message }, { status: 500 });
   }
 }
