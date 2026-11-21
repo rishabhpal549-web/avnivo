@@ -84,7 +84,37 @@ export default async function HomePage() {
       }),
     ]);
   } catch (err) {
-    console.error("HomePage data fetch error:", err);
+    console.error("HomePage data fetch error, using Supabase REST fallback:", err);
+  }
+
+  // Supabase REST fallback if Prisma connection is blocked by IPv4/IPv6 environment
+  if (trendingProductsRaw.length === 0) {
+    try {
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://ibrzfiwskfhlkfdjbyfv.supabase.co";
+      const supabaseKey =
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlicnpmaXdza2ZobGtmZGpieWZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTUyNjY1NjcsImV4cCI6MjExMDg0MjU2N30.XQALfrWAZbazKNZJpbxXAYr9DBr7IUURKE45jjsfF3o";
+
+      const res = await fetch(
+        `${supabaseUrl}/rest/v1/Product?select=id,name,slug,indicativePrice,originalPrice,discountPercent,rating,reviewCount,images,isFeatured,isTrending,isBestDeal,isTopPick,brand:Brand(name),merchantOffers:MerchantOffer(id,indicativePrice,originalPrice,discountPercent,merchant:Merchant(name))&order=indicativePrice.asc`,
+        {
+          headers: {
+            apikey: supabaseKey,
+            Authorization: `Bearer ${supabaseKey}`,
+          },
+          cache: "no-store",
+        }
+      );
+      if (res.ok) {
+        const all = await res.json();
+        trendingProductsRaw = all.filter((p: any) => p.isTrending).slice(0, 4);
+        bestDealsRaw = all.filter((p: any) => p.isBestDeal).slice(0, 4);
+        topPicksRaw = all.filter((p: any) => p.isTopPick).slice(0, 4);
+        featuredProductsRaw = all.filter((p: any) => p.isFeatured).slice(0, 4);
+      }
+    } catch (e) {
+      console.error("HomePage REST fallback error:", e);
+    }
   }
 
   const formatProduct = (p: any) => {
@@ -105,8 +135,8 @@ export default async function HomePage() {
       discountPercent: p.discountPercent,
       rating: p.rating,
       reviewCount: p.reviewCount,
-      offers: p.merchantOffers.map((o: any) => ({
-        merchantName: o.merchant.name,
+      offers: (p.merchantOffers || []).map((o: any) => ({
+        merchantName: o.merchant?.name || "Merchant",
         indicativePrice: o.indicativePrice,
         affiliateUrl: `/api/affiliate/redirect?offerId=${o.id}`,
       })),

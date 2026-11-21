@@ -74,9 +74,10 @@ function buildDirectTokenFilter(
 }
 
 export async function GET(req: NextRequest) {
+  const { searchParams } = new URL(req.url);
+  const rawQuery = (searchParams.get("q") || "").trim();
+
   try {
-    const { searchParams } = new URL(req.url);
-    const rawQuery = (searchParams.get("q") || "").trim();
 
     if (!rawQuery || rawQuery.length < 2) {
       return NextResponse.json({
@@ -225,7 +226,53 @@ export async function GET(req: NextRequest) {
       brands,
     });
   } catch (err: any) {
-    console.error("Search suggestions error:", err);
+    console.error("Search suggestions error, trying Supabase REST fallback:", err);
+    try {
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://ibrzfiwskfhlkfdjbyfv.supabase.co";
+      const supabaseKey =
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlicnpmaXdza2ZobGtmZGpieWZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTUyNjY1NjcsImV4cCI6MjExMDg0MjU2N30.XQALfrWAZbazKNZJpbxXAYr9DBr7IUURKE45jjsfF3o";
+
+      const res = await fetch(
+        `${supabaseUrl}/rest/v1/Product?select=id,name,slug,indicativePrice,originalPrice,discountPercent,images,brand:Brand(name)&name=ilike.*${encodeURIComponent(rawQuery)}*&limit=5`,
+        {
+          headers: {
+            apikey: supabaseKey,
+            Authorization: `Bearer ${supabaseKey}`,
+          },
+          cache: "no-store",
+        }
+      );
+      if (res.ok) {
+        const rawProducts = await res.json();
+        const formattedProducts = rawProducts.map((p: any) => {
+          let image = "";
+          try {
+            const imgs = JSON.parse(p.images);
+            image = imgs[0] || "";
+          } catch {
+            image = p.images;
+          }
+          return {
+            id: p.id,
+            name: p.name,
+            slug: p.slug,
+            brand: p.brand?.name || "",
+            indicativePrice: p.indicativePrice,
+            originalPrice: p.originalPrice,
+            discountPercent: p.discountPercent,
+            image,
+          };
+        });
+        return NextResponse.json({
+          products: formattedProducts,
+          categories: [],
+          brands: [],
+        });
+      }
+    } catch {
+      // ignore
+    }
     return NextResponse.json({ products: [], categories: [], brands: [] });
   }
 }

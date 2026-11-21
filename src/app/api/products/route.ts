@@ -77,25 +77,25 @@ function buildDirectTokenFilter(
 }
 
 export async function GET(req: NextRequest) {
-  try {
-    const { searchParams } = new URL(req.url);
+  const { searchParams } = new URL(req.url);
+  const rawQuery = (searchParams.get("q") || "").trim();
+  const categorySlug = searchParams.get("category");
+  const brandSlug = searchParams.get("brand");
+  const minPrice = searchParams.get("minPrice") ? parseFloat(searchParams.get("minPrice")!) : undefined;
+  const maxPrice = searchParams.get("maxPrice") ? parseFloat(searchParams.get("maxPrice")!) : undefined;
+  const minRating = searchParams.get("minRating") ? parseFloat(searchParams.get("minRating")!) : undefined;
+  const minDiscount = searchParams.get("minDiscount") ? parseFloat(searchParams.get("minDiscount")!) : undefined;
+  const merchantSlug = searchParams.get("merchant");
+  const sort = searchParams.get("sort") || "popular"; // popular, newest, price_asc, price_desc, discount, rating
+  const isFeatured = searchParams.get("featured") === "true";
+  const isTrending = searchParams.get("trending") === "true";
+  const isBestDeal = searchParams.get("bestDeal") === "true";
+  const isTopPick = searchParams.get("topPick") === "true";
+  const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
+  const limit = Math.min(50, Math.max(1, parseInt(searchParams.get("limit") || "12", 10)));
+  const skip = (page - 1) * limit;
 
-    const rawQuery = (searchParams.get("q") || "").trim();
-    const categorySlug = searchParams.get("category");
-    const brandSlug = searchParams.get("brand");
-    const minPrice = searchParams.get("minPrice") ? parseFloat(searchParams.get("minPrice")!) : undefined;
-    const maxPrice = searchParams.get("maxPrice") ? parseFloat(searchParams.get("maxPrice")!) : undefined;
-    const minRating = searchParams.get("minRating") ? parseFloat(searchParams.get("minRating")!) : undefined;
-    const minDiscount = searchParams.get("minDiscount") ? parseFloat(searchParams.get("minDiscount")!) : undefined;
-    const merchantSlug = searchParams.get("merchant");
-    const sort = searchParams.get("sort") || "popular"; // popular, newest, price_asc, price_desc, discount, rating
-    const isFeatured = searchParams.get("featured") === "true";
-    const isTrending = searchParams.get("trending") === "true";
-    const isBestDeal = searchParams.get("bestDeal") === "true";
-    const isTopPick = searchParams.get("topPick") === "true";
-    const page = Math.max(1, parseInt(searchParams.get("page") || "1", 10));
-    const limit = Math.min(50, Math.max(1, parseInt(searchParams.get("limit") || "12", 10)));
-    const skip = (page - 1) * limit;
+  try {
 
     // Independent conditions joined by AND
     const andConditions: any[] = [];
@@ -363,7 +363,102 @@ export async function GET(req: NextRequest) {
       },
     });
   } catch (err: any) {
-    console.error("Products API error:", err);
+    console.error("Prisma products error, using Supabase REST fallback:", err.message);
+    try {
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://ibrzfiwskfhlkfdjbyfv.supabase.co";
+      const supabaseKey =
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlicnpmaXdza2ZobGtmZGpieWZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTUyNjY1NjcsImV4cCI6MjExMDg0MjU2N30.XQALfrWAZbazKNZJpbxXAYr9DBr7IUURKE45jjsfF3o";
+
+      let endpoint = `${supabaseUrl}/rest/v1/Product?select=id,name,slug,description,shortDescription,indicativePrice,originalPrice,discountPercent,rating,reviewCount,isVerifiedRating,images,keyFeatures,specifications,isFeatured,isTrending,isBestDeal,isTopPick,availability,priceLastUpdated,brand:Brand(name),category:Category(name,nameHindi,slug),merchantOffers:MerchantOffer(id,merchantId,indicativePrice,originalPrice,discountPercent,availability,deliveryInfo,lastVerifiedAt,merchant:Merchant(id,name,slug,logoUrl))`;
+
+      if (rawQuery) {
+        endpoint += `&name=ilike.*${encodeURIComponent(rawQuery)}*`;
+      }
+      endpoint += `&order=indicativePrice.asc&limit=${limit}&offset=${skip}`;
+
+      const res = await fetch(endpoint, {
+        headers: {
+          apikey: supabaseKey,
+          Authorization: `Bearer ${supabaseKey}`,
+          Prefer: "count=exact",
+        },
+        cache: "no-store",
+      });
+
+      if (res.ok) {
+        const rawProducts = await res.json();
+        const contentRange = res.headers.get("content-range");
+        let totalCount = rawProducts.length;
+        if (contentRange) {
+          const parts = contentRange.split("/");
+          if (parts[1]) totalCount = parseInt(parts[1], 10);
+        }
+
+        const formattedProducts = rawProducts.map((p: any) => {
+          let images = [];
+          try { images = JSON.parse(p.images); } catch { images = [p.images]; }
+          let keyFeatures = [];
+          try { keyFeatures = JSON.parse(p.keyFeatures); } catch { keyFeatures = []; }
+          let specifications = {};
+          try { specifications = JSON.parse(p.specifications); } catch { specifications = {}; }
+
+          return {
+            id: p.id,
+            name: p.name,
+            slug: p.slug,
+            description: p.description,
+            shortDescription: p.shortDescription,
+            brandName: p.brand?.name || null,
+            categoryName: p.category?.name || "General",
+            categoryNameHindi: p.category?.nameHindi || "सामान्य",
+            categorySlug: p.category?.slug || "general",
+            images,
+            indicativePrice: p.indicativePrice,
+            originalPrice: p.originalPrice,
+            discountPercent: p.discountPercent,
+            rating: p.rating,
+            reviewCount: p.reviewCount,
+            isVerifiedRating: p.isVerifiedRating,
+            specifications,
+            keyFeatures,
+            isFeatured: p.isFeatured,
+            isTrending: p.isTrending,
+            isBestDeal: p.isBestDeal,
+            isTopPick: p.isTopPick,
+            availability: p.availability,
+            priceLastUpdated: p.priceLastUpdated,
+            offers: (p.merchantOffers || []).map((o: any) => ({
+              id: o.id,
+              merchantId: o.merchantId,
+              merchantName: o.merchant?.name || "Merchant",
+              merchantSlug: o.merchant?.slug || "merchant",
+              merchantLogo: o.merchant?.logoUrl || "/merchants/amazon.svg",
+              affiliateUrl: `/api/affiliate/redirect?offerId=${o.id}`,
+              indicativePrice: o.indicativePrice,
+              originalPrice: o.originalPrice,
+              discountPercent: o.discountPercent,
+              availability: o.availability,
+              deliveryInfo: o.deliveryInfo,
+              lastVerifiedAt: o.lastVerifiedAt,
+            })),
+          };
+        });
+
+        return NextResponse.json({
+          query: rawQuery,
+          products: formattedProducts,
+          pagination: {
+            page,
+            limit,
+            total: totalCount,
+            totalPages: Math.ceil(totalCount / limit) || 1,
+          },
+        });
+      }
+    } catch (fallbackErr: any) {
+      console.error("Products fallback error:", fallbackErr);
+    }
     return NextResponse.json({ error: "Failed to fetch products", details: err.message }, { status: 500 });
   }
 }
