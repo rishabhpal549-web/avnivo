@@ -1,0 +1,281 @@
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id              String             @id @default(cuid())
+  name            String
+  email           String             @unique
+  mobile          String?
+  passwordHash    String
+  role            String             @default("USER") // USER, ADMIN, CONTENT_MANAGER, SUPPORT_STAFF
+  emailVerified   DateTime?
+  avatarUrl       String?
+  isActive        Boolean            @default(true)
+  createdAt       DateTime           @default(now())
+  updatedAt       DateTime           @updatedAt
+
+  wishlist        WishlistItem[]
+  clickLogs       AffiliateClickLog[]
+  supportInquiries SupportInquiry[]
+  notifications   Notification[]
+  addresses       Address[]
+  orders          Order[]
+}
+
+model Category {
+  id          String     @id @default(cuid())
+  name        String
+  nameHindi   String?
+  slug        String     @unique
+  description String?
+  imageUrl    String?
+  icon        String?
+  parentId    String?
+  parent      Category?  @relation("SubCategories", fields: [parentId], references: [id], onDelete: Cascade)
+  children    Category[] @relation("SubCategories")
+  featured    Boolean    @default(false)
+  order       Int        @default(0)
+  createdAt   DateTime   @default(now())
+  updatedAt   DateTime   @updatedAt
+
+  products    Product[]
+}
+
+model Brand {
+  id        String    @id @default(cuid())
+  name      String
+  slug      String    @unique
+  logoUrl   String?
+  featured  Boolean   @default(false)
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+
+  products  Product[]
+}
+
+model Product {
+  id               String          @id @default(cuid())
+  name             String
+  slug             String          @unique
+  description      String
+  shortDescription String?
+  brandId          String?
+  brand            Brand?          @relation(fields: [brandId], references: [id], onDelete: SetNull)
+  categoryId       String
+  category         Category        @relation(fields: [categoryId], references: [id])
+  images           String          // JSON array of image URLs
+  indicativePrice  Float
+  originalPrice    Float
+  discountPercent  Float           @default(0)
+  rating           Float           @default(0)
+  reviewCount      Int             @default(0)
+  isVerifiedRating Boolean         @default(false)
+  specifications   String          // JSON object string
+  keyFeatures      String          // JSON array string
+  isFeatured       Boolean         @default(false)
+  isTrending       Boolean         @default(false)
+  isBestDeal       Boolean         @default(false)
+  isTopPick        Boolean         @default(false)
+  isNewArrival     Boolean         @default(false)
+  availability     String          @default("IN_STOCK") // IN_STOCK, OUT_OF_STOCK
+  priceLastUpdated DateTime        @default(now())
+  viewsCount       Int             @default(0)
+  clicksCount      Int             @default(0)
+  metaTitle        String?
+  metaDescription  String?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  merchantOffers   MerchantOffer[]
+  clickLogs        AffiliateClickLog[]
+  wishlistItems    WishlistItem[]
+  orderItems       OrderItem[]
+}
+
+model Merchant {
+  id                   String          @id @default(cuid())
+  name                 String
+  slug                 String          @unique
+  logoUrl              String?
+  websiteUrl           String
+  affiliateProgramName String?
+  isActive             Boolean         @default(true)
+  createdAt            DateTime        @default(now())
+  updatedAt            DateTime        @updatedAt
+
+  merchantOffers       MerchantOffer[]
+  clickLogs            AffiliateClickLog[]
+}
+
+model MerchantOffer {
+  id              String              @id @default(cuid())
+  productId       String
+  product         Product             @relation(fields: [productId], references: [id], onDelete: Cascade)
+  merchantId      String
+  merchant        Merchant            @relation(fields: [merchantId], references: [id], onDelete: Cascade)
+  affiliateUrl    String
+  indicativePrice Float
+  originalPrice   Float?
+  discountPercent Float?
+  availability    String              @default("IN_STOCK") // IN_STOCK, OUT_OF_STOCK, LIMITED
+  deliveryInfo    String?             // e.g. "Free 2-day delivery"
+  lastVerifiedAt  DateTime            @default(now())
+  isActive        Boolean             @default(true)
+  clickCount      Int                 @default(0)
+  createdAt       DateTime            @default(now())
+  updatedAt       DateTime            @updatedAt
+
+  clickLogs       AffiliateClickLog[]
+}
+
+model AffiliateClickLog {
+  id              String         @id @default(cuid())
+  productId       String
+  product         Product        @relation(fields: [productId], references: [id], onDelete: Cascade)
+  merchantOfferId String?
+  merchantOffer   MerchantOffer? @relation(fields: [merchantOfferId], references: [id], onDelete: SetNull)
+  merchantId      String?
+  merchant        Merchant?      @relation(fields: [merchantId], references: [id], onDelete: SetNull)
+  userId          String?
+  user            User?          @relation(fields: [userId], references: [id], onDelete: SetNull)
+  ipHash          String?
+  userAgent       String?
+  referrer        String?
+  utmSource       String?
+  utmMedium       String?
+  utmCampaign     String?
+  createdAt       DateTime       @default(now())
+}
+
+model WishlistItem {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([userId, productId])
+}
+
+model BlogPost {
+  id              String   @id @default(cuid())
+  title           String
+  slug            String   @unique
+  summary         String
+  content         String   // Markdown / structured text
+  coverImage      String?
+  category        String   // Buying Guides, Tech Reviews, etc.
+  authorName      String   @default("AVNIVO Editorial")
+  authorRole      String?  @default("Product Research Specialist")
+  readTimeMinutes Int      @default(5)
+  tags            String   @default("") // comma-separated
+  published       Boolean  @default(true)
+  metaTitle       String?
+  metaDescription String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
+model SupportInquiry {
+  id          String   @id @default(cuid())
+  name        String
+  email       String
+  phone       String?
+  subject     String
+  type        String   @default("GENERAL") // GENERAL, AFFILIATE_DISCLOSURE, PRICE_CORRECTION, GRIEVANCE
+  message     String
+  status      String   @default("PENDING") // PENDING, IN_PROGRESS, RESOLVED
+  adminNotes  String?
+  userId      String?
+  user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model SiteSetting {
+  key       String   @id
+  value     String
+  updatedAt DateTime @updatedAt
+}
+
+model Notification {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  title     String
+  message   String
+  type      String   @default("INFO") // PRICE_DROP, DEAL, SECURITY, INFO
+  isRead    Boolean  @default(false)
+  link      String?
+  createdAt DateTime @default(now())
+}
+
+// ==========================================
+// FUTURE E-COMMERCE & MULTI-VENDOR ARCHITECTURE
+// Prepared & ready for direct marketplace activation
+// ==========================================
+
+model Address {
+  id          String   @id @default(cuid())
+  userId      String
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  fullName    String
+  phone       String
+  street      String
+  city        String
+  state       String
+  postalCode  String
+  country     String   @default("India")
+  isDefault   Boolean  @default(false)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  orders      Order[]
+}
+
+model Order {
+  id                String      @id @default(cuid())
+  orderNumber       String      @unique
+  userId            String
+  user              User        @relation(fields: [userId], references: [id])
+  status            String      @default("PENDING") // PENDING, PAID, PROCESSING, SHIPPED, DELIVERED, CANCELLED
+  totalAmount       Float
+  currency          String      @default("INR")
+  shippingAddressId String?
+  shippingAddress   Address?    @relation(fields: [shippingAddressId], references: [id])
+  createdAt         DateTime    @default(now())
+  updatedAt         DateTime    @updatedAt
+
+  items             OrderItem[]
+}
+
+model OrderItem {
+  id        String   @id @default(cuid())
+  orderId   String
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  quantity  Int      @default(1)
+  unitPrice Float
+  createdAt DateTime @default(now())
+}
+
+model Seller {
+  id                 String   @id @default(cuid())
+  businessName       String
+  registrationNumber String?
+  contactEmail       String   @unique
+  contactPhone       String?
+  status             String   @default("PENDING_VERIFICATION") // PENDING_VERIFICATION, ACTIVE, SUSPENDED
+  commissionRate     Float    @default(5.0)
+  createdAt          DateTime @default(now())
+  updatedAt          DateTime @updatedAt
+}

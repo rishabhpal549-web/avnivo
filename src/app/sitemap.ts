@@ -1,50 +1,55 @@
-import { MetadataRoute } from 'next';
-import { CATEGORIES } from '@/data/categories';
-import { PRODUCTS } from '@/data/products';
-import { BUYING_GUIDES } from '@/data/guides';
+import { MetadataRoute } from "next";
+import { prisma } from "@/lib/prisma";
 
-export default function sitemap(): MetadataRoute.Sitemap {
-  const baseUrl = 'https://avnivo.in';
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://avnivo.com";
 
-  // 10 Core Static Pages
-  const staticPages: MetadataRoute.Sitemap = [
-    { url: `${baseUrl}`, lastModified: new Date(), changeFrequency: 'daily', priority: 1.0 },
-    { url: `${baseUrl}/about`, lastModified: new Date(), changeFrequency: 'monthly', priority: 0.8 },
-    { url: `${baseUrl}/categories`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.9 },
-    { url: `${baseUrl}/reviews`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.9 },
-    { url: `${baseUrl}/compare`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.85 },
-    { url: `${baseUrl}/buying-guides`, lastModified: new Date(), changeFrequency: 'weekly', priority: 0.9 },
-    { url: `${baseUrl}/contact`, lastModified: new Date(), changeFrequency: 'yearly', priority: 0.6 },
-    { url: `${baseUrl}/privacy-policy`, lastModified: new Date(), changeFrequency: 'yearly', priority: 0.5 },
-    { url: `${baseUrl}/terms`, lastModified: new Date(), changeFrequency: 'yearly', priority: 0.5 },
-    { url: `${baseUrl}/affiliate-disclosure`, lastModified: new Date(), changeFrequency: 'yearly', priority: 0.7 },
-    { url: `${baseUrl}/search`, lastModified: new Date(), changeFrequency: 'daily', priority: 0.7 },
+  // Static routes
+  const staticRoutes: MetadataRoute.Sitemap = [
+    { url: `${baseUrl}`, lastModified: new Date(), changeFrequency: "daily", priority: 1.0 },
+    { url: `${baseUrl}/shop`, lastModified: new Date(), changeFrequency: "daily", priority: 0.9 },
+    { url: `${baseUrl}/deals`, lastModified: new Date(), changeFrequency: "hourly", priority: 0.9 },
+    { url: `${baseUrl}/compare`, lastModified: new Date(), changeFrequency: "weekly", priority: 0.8 },
+    { url: `${baseUrl}/blog`, lastModified: new Date(), changeFrequency: "daily", priority: 0.8 },
+    { url: `${baseUrl}/about`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.5 },
+    { url: `${baseUrl}/affiliate-disclosure`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.6 },
+    { url: `${baseUrl}/privacy-policy`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.5 },
+    { url: `${baseUrl}/terms`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.5 },
+    { url: `${baseUrl}/disclaimer`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.5 },
+    { url: `${baseUrl}/grievance-redressal`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.6 },
+    { url: `${baseUrl}/contact`, lastModified: new Date(), changeFrequency: "monthly", priority: 0.5 },
   ];
 
-  // Dynamic Category Pages (8 categories)
-  const categoryPages: MetadataRoute.Sitemap = CATEGORIES.map((cat) => ({
-    url: `${baseUrl}/categories/${cat.slug}`,
-    lastModified: new Date(),
-    changeFrequency: 'weekly',
-    priority: 0.85,
-  }));
+  try {
+    const [products, categories, posts] = await Promise.all([
+      prisma.product.findMany({ select: { slug: true, updatedAt: true } }),
+      prisma.category.findMany({ select: { slug: true, updatedAt: true } }),
+      prisma.blogPost.findMany({ where: { published: true }, select: { slug: true, updatedAt: true } }),
+    ]);
 
-  // Dynamic Product Review Pages
-  const productPages: MetadataRoute.Sitemap = PRODUCTS.map((prod) => ({
-    url: `${baseUrl}/reviews/${prod.slug}`,
-    lastModified: new Date(),
-    changeFrequency: 'weekly',
-    priority: 0.8,
-  }));
+    const productRoutes: MetadataRoute.Sitemap = products.map((p) => ({
+      url: `${baseUrl}/product/${p.slug}`,
+      lastModified: p.updatedAt,
+      changeFrequency: "daily",
+      priority: 0.8,
+    }));
 
-  // Dynamic Buying Guides
-  const guidePages: MetadataRoute.Sitemap = BUYING_GUIDES.map((guide) => ({
-    url: `${baseUrl}/buying-guides/${guide.slug}`,
-    lastModified: new Date(),
-    changeFrequency: 'monthly',
-    priority: 0.8,
-  }));
+    const categoryRoutes: MetadataRoute.Sitemap = categories.map((c) => ({
+      url: `${baseUrl}/category/${c.slug}`,
+      lastModified: c.updatedAt,
+      changeFrequency: "weekly",
+      priority: 0.7,
+    }));
 
-  return [...staticPages, ...categoryPages, ...productPages, ...guidePages];
+    const postRoutes: MetadataRoute.Sitemap = posts.map((post) => ({
+      url: `${baseUrl}/blog/${post.slug}`,
+      lastModified: post.updatedAt,
+      changeFrequency: "weekly",
+      priority: 0.7,
+    }));
+
+    return [...staticRoutes, ...categoryRoutes, ...productRoutes, ...postRoutes];
+  } catch {
+    return staticRoutes;
+  }
 }
-

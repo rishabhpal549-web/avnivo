@@ -1,77 +1,62 @@
-export interface Product {
+export interface ProductSpecification {
+  [key: string]: string;
+}
+
+export interface MerchantOfferItem {
   id: string;
-  name: string;
-  slug: string;
-  brand: string;
-  category: string;
-  categorySlug: string;
-  description: string;
-  shortDescription: string;
-  images: string[];
-  price: number; // in INR
-  originalPrice: number; // in INR
-  discountPercent: number;
+  merchantId: string;
   merchantName: string;
+  merchantLogo?: string;
   affiliateUrl: string;
-  rating: number; // 1.0 - 5.0
-  ratingCount: number;
-  featured: boolean;
-  trending: boolean;
-  bestSeller?: boolean;
-  dealOfTheDay?: boolean;
-  specifications: Record<string, string>;
-  pros: string[];
-  cons: string[];
-  bestFor: string;
-  verdict: string;
-  inStock: boolean;
-  badge?: string;
-  asin?: string;
+  indicativePrice: number;
+  originalPrice?: number;
+  discountPercent?: number;
+  availability: string;
+  deliveryInfo?: string;
+  lastVerifiedAt: string;
+  clickCount: number;
 }
 
-export interface Category {
+export interface ProductItem {
   id: string;
   name: string;
   slug: string;
   description: string;
-  longDescription: string;
-  icon: string;
-  image: string;
-  productCount: number;
-  featured: boolean;
-  metaTitle?: string;
-  metaDescription?: string;
-}
-
-export interface BuyingGuide {
-  id: string;
-  title: string;
-  slug: string;
-  excerpt: string;
-  category: string;
+  shortDescription?: string;
+  brandName?: string;
+  categoryName: string;
   categorySlug: string;
-  coverImage: string;
-  readTime: string;
-  publishedAt: string;
-  author: string;
-  tableOfContents: { id: string; title: string }[];
-  contentSections: {
+  images: string[];
+  indicativePrice: number;
+  originalPrice: number;
+  discountPercent: number;
+  rating: number;
+  reviewCount: number;
+  isVerifiedRating: boolean;
+  specifications: ProductSpecification;
+  keyFeatures: string[];
+  isFeatured: boolean;
+  isTrending: boolean;
+  isBestDeal: boolean;
+  isTopPick: boolean;
+  isNewArrival: boolean;
+  availability: string;
+  priceLastUpdated: string;
+  offers: MerchantOfferItem[];
+}
+
+export interface CategoryItem {
+  id: string;
+  name: string;
+  nameHindi?: string;
+  slug: string;
+  description?: string;
+  imageUrl?: string;
+  icon?: string;
+  featured: boolean;
+  subcategories?: {
     id: string;
-    title: string;
-    body: string;
-    tips?: string[];
+    name: string;
+    slug: string;
   }[];
-  recommendedProductIds: string[];
-  faqs?: { question: string; answer: string }[];
 }
-
-export interface FilterState {
-  category: string;
-  brand: string[];
-  minPrice: number;
-  maxPrice: number;
-  minRating: number;
-  onlyDeals: boolean;
-  sortBy: 'featured' | 'price-asc' | 'price-desc' | 'rating' | 'newest';
-}
-

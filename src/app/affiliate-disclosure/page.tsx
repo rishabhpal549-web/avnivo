@@ -1,160 +1,105 @@
-import React from 'react';
-import type { Metadata } from 'next';
-import Link from 'next/link';
-import { 
-  ShieldCheck, 
-  CheckCircle2, 
-  HelpCircle, 
-  ExternalLink, 
-  AlertCircle,
-  Percent,
-  Sparkles,
-  ShoppingBag
-} from 'lucide-react';
-import { Breadcrumb } from '@/components/Breadcrumb';
-import { SITE_CONFIG } from '@/data/siteConfig';
+import React from "react";
+import { ShieldCheck, Info, FileText } from "lucide-react";
 
-export const metadata: Metadata = {
-  title: 'Affiliate Disclosure – Amazon Associates & Transparency Statement | AVNIVO',
-  description: 'AVNIVO Affiliate Disclosure: Complete transparency regarding our affiliate partnerships, Amazon Associates participation, commission model, and zero extra costs to readers.',
+export const metadata = {
+  title: "Affiliate Marketing Disclosure | AVNIVO",
+  description: "Transparent legal statement regarding AVNIVO's affiliate partnerships, advertising relationships, and referral commission model.",
 };
 
 export default function AffiliateDisclosurePage() {
   return (
-    <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-      <Breadcrumb items={[{ label: 'Affiliate Disclosure' }]} />
-
-      {/* Header */}
-      <div className="space-y-3">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-orange/15 text-brand-orange text-xs font-bold uppercase tracking-wider">
-          <ShieldCheck size={14} />
-          <span>Full Legal & FTC / ASCI Transparency</span>
+    <div className="max-w-4xl mx-auto px-4 sm:px-6 py-12">
+      <div className="text-center max-w-2xl mx-auto mb-10">
+        <div className="inline-flex items-center gap-1.5 px-3 py-1 bg-blue-100 text-secondary text-xs font-bold rounded-full mb-3">
+          <ShieldCheck className="w-4 h-4" />
+          <span>Statutory Consumer Transparency</span>
         </div>
-        <h1 className="text-3xl sm:text-4xl font-black text-gray-900 tracking-tight">
-          Affiliate Disclosure Statement
+        <h1 className="text-3xl sm:text-4xl font-black text-primary font-display">
+          Affiliate Marketing Disclosure
         </h1>
-        <p className="text-xs text-gray-500">
-          Last Updated: November 13, 2026 • In Compliance with Amazon Associates Operating Agreement & ASCI Guidelines
+        <p className="text-xs sm:text-sm text-gray-500 mt-2">
+          Last Updated: November 2025 • Effective across all AVNIVO platforms
         </p>
       </div>
 
-      {/* Top Highlight Banner */}
-      <div className="p-6 rounded-3xl bg-gradient-to-r from-brand-navy via-brand-navyLight to-brand-navyDark text-white space-y-3 shadow-md">
-        <div className="flex items-center gap-2 text-brand-orange text-xs font-bold uppercase tracking-wider">
-          <Sparkles size={16} />
-          <span>Core Transparency Summary</span>
+      <div className="bg-white rounded-3xl p-6 sm:p-10 border border-gray-100 shadow-sm space-y-6 text-sm text-gray-700 leading-relaxed">
+        <div className="p-4 bg-blue-50 border border-blue-200 rounded-2xl text-blue-950 font-medium text-xs leading-relaxed">
+          <strong>Key Summary:</strong> AVNIVO is free for consumers. We may earn an advertising or referral commission when you purchase through links on our site. This never increases the price you pay. We do not accept payment to artificially manipulate product rankings or recommend inferior products.
         </div>
-        <p className="text-sm sm:text-base font-semibold leading-relaxed">
-          AVNIVO is a participant in affiliate marketing programs, notably the Amazon Associates Program. When you click a product link on AVNIVO and make a purchase on an external merchant platform, we may earn an affiliate commission at <strong>no extra cost to you</strong>.
-        </p>
-      </div>
 
-      {/* Structured Sections */}
-      <div className="bg-white rounded-3xl border border-gray-200 p-6 sm:p-10 shadow-sm space-y-8 text-xs sm:text-sm text-gray-700 leading-relaxed">
-        {/* 1. What is Affiliate Marketing? */}
         <section className="space-y-3">
-          <h2 className="text-base font-bold text-brand-navy">
-            1. What is Affiliate Marketing and Why Does AVNIVO Use It?
+          <h2 className="text-lg font-bold text-primary font-display">
+            1. Our Business Model & How We Sustain Free Discovery
           </h2>
           <p>
-            Publishing comprehensive, non-sponsored buying guides, purchasing and comparing physical cookware, and conducting deep research into product technical specifications requires substantial time, effort, and testing resources.
-          </p>
-          <p>
-            Rather than cluttering our pages with intrusive pop-up banners or accepting paid sponsored reviews from manufacturers that would compromise our objectivity, AVNIVO is supported by affiliate marketing. When our recommendations help you discover a genuinely useful product that you decide to buy, the merchant pays us a modest referral percentage from their advertising budget.
+            AVNIVO is an independent, consumer-first e-commerce discovery and price comparison engine based in India. Our core service is 100% free for all shoppers. To cover operational infrastructure, real-time price monitoring servers, and editorial research staff, we partner with reputable retail networks through affiliate marketing agreements.
           </p>
         </section>
 
-        {/* 2. Amazon Associates Operating Agreement Statement */}
-        <section className="space-y-3 border-t border-gray-100 pt-6">
-          <h2 className="text-base font-bold text-brand-navy">
-            2. Official Amazon Associates Statement
-          </h2>
-          <div className="p-4 rounded-2xl bg-amber-50/80 border border-amber-200 text-amber-950 font-medium text-xs leading-relaxed space-y-2">
-            <p>
-              &quot;<strong>AVNIVO</strong> participates in the <strong>Amazon Services LLC Associates Program</strong>, an affiliate advertising program designed to provide a means for websites to earn advertising fees by advertising and linking to <strong>Amazon.in</strong> and affiliated sites.&quot;
-            </p>
-            <p className="text-[11px] text-gray-600">
-              Amazon, the Amazon logo, AmazonSupply, and the AmazonSupply logo are trademarks of Amazon.com, Inc. or its affiliates.
-            </p>
-          </div>
-        </section>
-
-        {/* 3. Does This Cost You Extra Money? */}
-        <section className="space-y-3 border-t border-gray-100 pt-6">
-          <h2 className="text-base font-bold text-brand-navy">
-            3. Zero Extra Cost to the Customer
-          </h2>
-          <div className="flex items-start gap-3 p-4 rounded-2xl bg-emerald-50/70 border border-emerald-200">
-            <CheckCircle2 size={20} className="text-emerald-600 shrink-0 mt-0.5" />
-            <div className="space-y-1 text-xs text-gray-800">
-              <h4 className="font-bold text-emerald-950 text-sm">You Pay the Standard Merchant Price</h4>
-              <p className="leading-relaxed">
-                Clicking an affiliate link on AVNIVO <strong>does not add a single rupee to the purchase price</strong>. You enjoy the exact same discounts, promotional bank coupon codes, lightning deals, Prime shipping perks, and reward coins that any direct shopper would receive.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* 4. Independence of Editorial Opinions */}
-        <section className="space-y-3 border-t border-gray-100 pt-6">
-          <h2 className="text-base font-bold text-brand-navy">
-            4. Unbiased Editorial Integrity
+        <section className="space-y-3">
+          <h2 className="text-lg font-bold text-primary font-display">
+            2. Participation in Affiliate Programs
           </h2>
           <p>
-            Our product selections and ratings are driven purely by specification evaluation, material durability analysis, and real feedback from verified Indian consumers. We do not select or rank products based on which merchant offers the highest commission rate.
+            AVNIVO is an authorized participant in several major affiliate programs, including but not limited to:
           </p>
-          <p>
-            If a popular, heavily marketed product suffers from frequent design failures, motor burnout, or customer dissatisfaction, we highlight those drawbacks prominently in our &quot;Cons&quot; and &quot;Verdict&quot; sections.
-          </p>
-        </section>
-
-        {/* 5. External Merchant Fulfillment & Customer Support */}
-        <section className="space-y-3 border-t border-gray-100 pt-6">
-          <h2 className="text-base font-bold text-brand-navy">
-            5. Merchant Sales, Shipping & Pricing Disclaimer
-          </h2>
-          <p>
-            AVNIVO is an editorial discovery platform, <strong>not an ecommerce merchant</strong>.
-          </p>
-          <ul className="list-disc pl-5 space-y-1.5 text-gray-600">
-            <li>We do not store stock, take payments, or pack and ship products.</li>
-            <li>All transactions occur securely on external merchant websites (like Amazon India).</li>
-            <li>Prices, delivery dates, and return policies are managed exclusively by the external merchant.</li>
-            <li>If an item arrives damaged, late, or in need of warranty claim, you must contact the selling merchant or manufacturer directly.</li>
+          <ul className="list-disc pl-5 space-y-1.5 text-xs text-gray-600">
+            <li>
+              <strong>Amazon Associates India:</strong> As an Amazon Associate, AVNIVO earns from qualifying purchases made after clicking our authorized product links.
+            </li>
+            <li>
+              <strong>Flipkart Affiliate Network:</strong> We track eligible purchases referred to Flipkart Internet Private Limited under official partner guidelines.
+            </li>
+            <li>
+              <strong>Authorized Retail Partners:</strong> Selected brand and merchant partner networks (e.g., Croma, Tata CLiQ, Reliance Digital) where authorized feeds or affiliate integrations exist.
+            </li>
           </ul>
         </section>
 
-        {/* 6. Sponsored Link Attributes (rel="sponsored") */}
-        <section className="space-y-3 border-t border-gray-100 pt-6">
-          <h2 className="text-base font-bold text-brand-navy">
-            6. Technical Compliance: Sponsored Link Attributes
+        <section className="space-y-3">
+          <h2 className="text-lg font-bold text-primary font-display">
+            3. Zero Surcharge to Shoppers
           </h2>
           <p>
-            In accordance with Google Search Webmaster Guidelines and advertising transparency standards, all outbound affiliate hyperlinks across AVNIVO are formatted with appropriate sponsored attributes:
-          </p>
-          <div className="p-3 bg-gray-50 rounded-xl font-mono text-xs text-brand-navy border border-gray-200">
-            rel=&quot;sponsored noopener noreferrer&quot;
-          </div>
-          <p className="text-xs text-gray-500">
-            This clearly signals to search engines and visitors that the destination link is an affiliate recommendation.
+            Clicking an affiliate link on AVNIVO does <strong>not</strong> increase the purchase price. The commission is paid entirely by the merchant out of their customer acquisition budget. In many cases, AVNIVO shoppers receive exclusive coupon codes, bank cashbacks, or lower indicative rates that reduce the final checkout expense.
           </p>
         </section>
 
-        {/* 7. Questions */}
-        <section className="space-y-3 border-t border-gray-100 pt-6">
-          <h2 className="text-base font-bold text-brand-navy">
-            7. Questions Regarding Our Disclosure?
+        <section className="space-y-3">
+          <h2 className="text-lg font-bold text-primary font-display">
+            4. Editorial Independence & Rating Integrity
           </h2>
           <p>
-            If you have any questions, concerns, or feedback about our affiliate relationships or editorial policies, please contact our Editorial Team at{' '}
-            <a href={`mailto:${SITE_CONFIG.contact.pressEmail}`} className="text-brand-orange underline font-bold">
-              {SITE_CONFIG.contact.pressEmail}
-            </a>
-            .
+            Our editorial guides, specifications matrices, and automated price comparison algorithms function independently of commercial relationships. We never:
+          </p>
+          <ul className="list-disc pl-5 space-y-1 text-xs text-gray-600">
+            <li>Fabricate ratings, review counts, or consumer testimonials.</li>
+            <li>List an inferior retailer simply because they offer higher commission percentages.</li>
+            <li>Falsify discounts, original list prices, or stock availability.</li>
+          </ul>
+        </section>
+
+        <section className="space-y-3">
+          <h2 className="text-lg font-bold text-primary font-display">
+            5. Limitation of Merchant Liability
+          </h2>
+          <p>
+            AVNIVO does not operate merchant checkout, billing, inventory warehousing, packaging, or courier shipping for affiliate referrals. All warranties, return timelines, shipping SLAs, and customer service inquiries remain strictly between you and the merchant retailer where you completed payment.
+          </p>
+        </section>
+
+        <section className="space-y-3">
+          <h2 className="text-lg font-bold text-primary font-display">
+            6. Regulatory Contact
+          </h2>
+          <p className="text-xs text-gray-500">
+            Questions regarding our affiliate relationships or compliance with the Consumer Protection (E-Commerce) Rules, 2020 should be directed to our compliance desk at{" "}
+            <a href="mailto:compliance@avnivo.com" className="text-secondary underline font-semibold">
+              compliance@avnivo.com
+            </a>.
           </p>
         </section>
       </div>
     </div>
   );
 }
-

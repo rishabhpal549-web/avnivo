@@ -1,316 +1,233 @@
-'use client';
+"use client";
 
-import React, { useState } from 'react';
-import Link from 'next/link';
-import { 
-  Mail, 
-  Send, 
-  CheckCircle2, 
-  AlertCircle, 
-  ShieldCheck, 
-  MessageSquare,
-  Facebook,
-  Instagram,
-  Twitter,
-  Youtube,
-  Clock
-} from 'lucide-react';
-import { Breadcrumb } from '@/components/Breadcrumb';
-import { SITE_CONFIG } from '@/data/siteConfig';
+import React, { useState } from "react";
+import { Mail, Phone, MapPin, Send, CheckCircle2, AlertCircle } from "lucide-react";
 
 export default function ContactPage() {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    subject: '',
-    category: 'General Inquiry',
-    message: '',
-    honeypot: '', // anti-spam bot trap
-  });
-
-  const [submitted, setSubmitted] = useState(false);
+  const [name, setName] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
+  const [type, setType] = useState("GENERAL");
+  const [subject, setSubject] = useState("");
+  const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [successMsg, setSuccessMsg] = useState<string | null>(null);
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError(null);
-
-    // Spam honeypot detection
-    if (formData.honeypot) {
-      // Bot detected, silently finish
-      setSubmitted(true);
-      return;
-    }
-
-    if (!formData.name.trim() || !formData.email.trim() || !formData.message.trim()) {
-      setError('Please complete all required fields.');
-      return;
-    }
-
     setLoading(true);
+    setSuccessMsg(null);
+    setErrorMsg(null);
 
-    // Simulate reliable submission
-    setTimeout(() => {
+    try {
+      const res = await fetch("/api/support", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, email, phone, type, subject, message }),
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        setSuccessMsg(data.message || "Thank you. Your inquiry has been submitted.");
+        setName("");
+        setEmail("");
+        setPhone("");
+        setSubject("");
+        setMessage("");
+      } else {
+        setErrorMsg(data.error || "Failed to submit inquiry.");
+      }
+    } catch {
+      setErrorMsg("Network error. Please try again.");
+    } finally {
       setLoading(false);
-      setSubmitted(true);
-    }, 600);
+    }
   };
 
   return (
-    <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-10">
-      <Breadcrumb items={[{ label: 'Contact Us' }]} />
-
-      {/* Header */}
-      <div className="space-y-3 max-w-2xl">
-        <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-brand-orange/15 text-brand-orange text-xs font-bold uppercase tracking-wider">
-          <MessageSquare size={14} />
-          <span>Get in Touch</span>
-        </div>
-        <h1 className="text-3xl sm:text-4xl font-black text-gray-900 tracking-tight">
-          Contact AVNIVO
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-12">
+      <div className="text-center max-w-2xl mx-auto mb-12">
+        <h1 className="text-3xl sm:text-4xl font-black text-primary font-display">
+          Contact Us & Help Center
         </h1>
-        <p className="text-sm text-gray-600 leading-relaxed">
-          Have a product query, editorial correction, or partnership suggestion? Reach out to our research and customer support desk.
+        <p className="text-xs sm:text-sm text-gray-500 mt-2">
+          Have a question about a price comparison, affiliate disclosure, or need support? We&apos;re here to assist.
         </p>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
-        {/* Left: Contact Form */}
-        <div className="lg:col-span-7 bg-white rounded-3xl border border-gray-200 p-6 sm:p-8 shadow-sm">
-          {submitted ? (
-            <div className="py-12 text-center space-y-4 animate-in fade-in duration-300">
-              <div className="w-16 h-16 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center mx-auto">
-                <CheckCircle2 size={32} />
-              </div>
-              <h3 className="text-xl font-black text-gray-900">Message Received!</h3>
-              <p className="text-xs text-gray-600 max-w-sm mx-auto leading-relaxed">
-                Thank you for contacting AVNIVO. Our team reviews all inquiries within 24–48 business hours. A confirmation has been logged for <strong>{formData.email}</strong>.
-              </p>
-              <button
-                onClick={() => {
-                  setSubmitted(false);
-                  setFormData({ name: '', email: '', subject: '', category: 'General Inquiry', message: '', honeypot: '' });
-                }}
-                className="mt-4 px-5 py-2.5 rounded-xl bg-brand-navy hover:bg-brand-navyDark text-white text-xs font-bold transition-colors"
-              >
-                Send Another Message
-              </button>
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10">
+        {/* Contact Form */}
+        <div className="lg:col-span-7 bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-sm">
+          <h2 className="text-xl font-bold text-primary font-display mb-4">
+            Send Us a Message
+          </h2>
+
+          {successMsg && (
+            <div className="mb-6 p-4 bg-green-50 border border-green-200 text-green-800 text-xs rounded-2xl flex items-center gap-2">
+              <CheckCircle2 className="w-5 h-5 shrink-0 text-green-600" />
+              <span>{successMsg}</span>
             </div>
-          ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <h3 className="font-black text-lg text-gray-900 border-b border-gray-100 pb-3">
-                Send Us a Message
-              </h3>
+          )}
 
-              {error && (
-                <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-xs text-red-700 flex items-center gap-2">
-                  <AlertCircle size={16} />
-                  <span>{error}</span>
-                </div>
-              )}
+          {errorMsg && (
+            <div className="mb-6 p-4 bg-red-50 border border-red-200 text-red-700 text-xs rounded-2xl flex items-center gap-2">
+              <AlertCircle className="w-5 h-5 shrink-0" />
+              <span>{errorMsg}</span>
+            </div>
+          )}
 
-              {/* Honeypot field (hidden from human visitors) */}
-              <div className="hidden" aria-hidden="true">
-                <input
-                  type="text"
-                  name="honeypot"
-                  tabIndex={-1}
-                  value={formData.honeypot}
-                  onChange={handleChange}
-                  autoComplete="off"
-                />
-              </div>
-
-              {/* Name */}
+          <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold text-gray-700 mb-1">
-                  Your Full Name <span className="text-red-500">*</span>
-                </label>
+                <label className="block font-bold text-gray-700 mb-1">Your Name *</label>
                 <input
                   type="text"
-                  name="name"
                   required
-                  value={formData.name}
-                  onChange={handleChange}
-                  placeholder="e.g. Rahul Sharma"
-                  className="w-full h-10 px-3.5 rounded-xl bg-gray-50 border border-gray-200 text-xs focus:outline-none focus:ring-2 focus:ring-brand-orange"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="e.g. Ananya Rao"
+                  className="w-full border border-gray-200 rounded-xl p-3 outline-none focus:border-secondary"
                 />
               </div>
 
-              {/* Email */}
               <div>
-                <label className="block text-xs font-bold text-gray-700 mb-1">
-                  Email Address <span className="text-red-500">*</span>
-                </label>
+                <label className="block font-bold text-gray-700 mb-1">Email Address *</label>
                 <input
                   type="email"
-                  name="email"
                   required
-                  value={formData.email}
-                  onChange={handleChange}
-                  placeholder="e.g. rahul@example.com"
-                  className="w-full h-10 px-3.5 rounded-xl bg-gray-50 border border-gray-200 text-xs focus:outline-none focus:ring-2 focus:ring-brand-orange"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="ananya@example.com"
+                  className="w-full border border-gray-200 rounded-xl p-3 outline-none focus:border-secondary"
                 />
               </div>
+            </div>
 
-              {/* Category & Subject Row */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-xs font-bold text-gray-700 mb-1">
-                    Inquiry Topic
-                  </label>
-                  <select
-                    name="category"
-                    value={formData.category}
-                    onChange={handleChange}
-                    className="w-full h-10 px-3 rounded-xl bg-gray-50 border border-gray-200 text-xs font-medium text-gray-800 focus:outline-none focus:ring-2 focus:ring-brand-orange"
-                  >
-                    <option value="General Inquiry">General Inquiry</option>
-                    <option value="Product Review Suggestion">Product Review Suggestion</option>
-                    <option value="Editorial Correction">Editorial Correction</option>
-                    <option value="Affiliate Disclosure Question">Affiliate Disclosure Question</option>
-                    <option value="Business Partnership">Business Partnership</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-xs font-bold text-gray-700 mb-1">
-                    Subject Line <span className="text-red-500">*</span>
-                  </label>
-                  <input
-                    type="text"
-                    name="subject"
-                    required
-                    value={formData.subject}
-                    onChange={handleChange}
-                    placeholder="Short summary of inquiry"
-                    className="w-full h-10 px-3.5 rounded-xl bg-gray-50 border border-gray-200 text-xs focus:outline-none focus:ring-2 focus:ring-brand-orange"
-                  />
-                </div>
-              </div>
-
-              {/* Message */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
-                <label className="block text-xs font-bold text-gray-700 mb-1">
-                  Detailed Message <span className="text-red-500">*</span>
-                </label>
-                <textarea
-                  name="message"
-                  required
-                  rows={5}
-                  value={formData.message}
-                  onChange={handleChange}
-                  placeholder="How can we help you? Include product links or questions..."
-                  className="w-full p-3.5 rounded-xl bg-gray-50 border border-gray-200 text-xs focus:outline-none focus:ring-2 focus:ring-brand-orange"
+                <label className="block font-bold text-gray-700 mb-1">Phone Number (Optional)</label>
+                <input
+                  type="tel"
+                  value={phone}
+                  onChange={(e) => setPhone(e.target.value)}
+                  placeholder="+91 98765 43210"
+                  className="w-full border border-gray-200 rounded-xl p-3 outline-none focus:border-secondary"
                 />
               </div>
 
-              {/* Submit */}
-              <button
-                type="submit"
-                disabled={loading}
-                className="w-full py-3 rounded-xl bg-brand-orange hover:bg-brand-orangeHover text-white text-xs font-bold shadow-md shadow-brand-orange/20 transition-all flex items-center justify-center gap-2"
-              >
-                {loading ? (
-                  <span>Sending inquiry...</span>
-                ) : (
-                  <>
-                    <Send size={15} />
-                    <span>Send Message to AVNIVO</span>
-                  </>
-                )}
-              </button>
-
-              <div className="text-[11px] text-gray-400 text-center pt-1">
-                We protect your personal data in accordance with our{' '}
-                <Link href="/privacy-policy" className="text-brand-navy underline">
-                  Privacy Policy
-                </Link>
-                .
+              <div>
+                <label className="block font-bold text-gray-700 mb-1">Inquiry Type</label>
+                <select
+                  value={type}
+                  onChange={(e) => setType(e.target.value)}
+                  className="w-full border border-gray-200 rounded-xl p-3 outline-none focus:border-secondary bg-white"
+                >
+                  <option value="GENERAL">General Shopping Inquiry</option>
+                  <option value="PRICE_CORRECTION">Report Outdated Price / Link Issue</option>
+                  <option value="AFFILIATE_DISCLOSURE">Affiliate Relationship Inquiry</option>
+                  <option value="GRIEVANCE">Consumer Protection Grievance</option>
+                  <option value="PARTNERSHIP">Merchant / Brand Partnership</option>
+                </select>
               </div>
-            </form>
-          )}
+            </div>
+
+            <div>
+              <label className="block font-bold text-gray-700 mb-1">Subject</label>
+              <input
+                type="text"
+                required
+                value={subject}
+                onChange={(e) => setSubject(e.target.value)}
+                placeholder="Brief summary of your question"
+                className="w-full border border-gray-200 rounded-xl p-3 outline-none focus:border-secondary"
+              />
+            </div>
+
+            <div>
+              <label className="block font-bold text-gray-700 mb-1">Your Message *</label>
+              <textarea
+                rows={5}
+                required
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                placeholder="Provide specific details so our team can help you efficiently..."
+                className="w-full border border-gray-200 rounded-xl p-3 outline-none focus:border-secondary"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-secondary hover:bg-secondary-dark text-white font-bold py-3.5 px-8 rounded-xl transition-all shadow-md text-sm disabled:opacity-50"
+            >
+              <Send className="w-4 h-4" />
+              <span>{loading ? "Submitting..." : "Send Message"}</span>
+            </button>
+          </form>
         </div>
 
-        {/* Right: Direct Channels & Information */}
+        {/* Office & Channels Info */}
         <div className="lg:col-span-5 space-y-6">
-          {/* Email Contacts */}
-          <div className="bg-white rounded-3xl border border-gray-200 p-6 space-y-4 shadow-sm">
-            <h3 className="font-black text-base text-brand-navy">
-              Direct Contact Channels
+          <div className="bg-surface rounded-3xl p-6 sm:p-8 border border-gray-200/80 space-y-6">
+            <h3 className="font-bold text-base text-primary font-display">
+              Support Channels
             </h3>
 
-            <div className="space-y-3 text-xs text-gray-600">
-              <div className="flex items-start gap-3 p-3 rounded-xl bg-gray-50 border border-gray-100">
-                <Mail size={18} className="text-brand-orange shrink-0 mt-0.5" />
+            <div className="space-y-4 text-xs">
+              <div className="flex items-start gap-3">
+                <Mail className="w-5 h-5 text-secondary shrink-0 mt-0.5" />
                 <div>
-                  <div className="font-bold text-gray-900">General & Reader Support</div>
-                  <a href={`mailto:${SITE_CONFIG.contact.email}`} className="text-brand-navy hover:underline font-semibold">
-                    {SITE_CONFIG.contact.email}
+                  <span className="font-bold text-primary block">Customer Support:</span>
+                  <a href="mailto:support@avnivo.com" className="text-secondary hover:underline">
+                    support@avnivo.com
                   </a>
                 </div>
               </div>
 
-              <div className="flex items-start gap-3 p-3 rounded-xl bg-gray-50 border border-gray-100">
-                <Mail size={18} className="text-brand-orange shrink-0 mt-0.5" />
+              <div className="flex items-start gap-3">
+                <Phone className="w-5 h-5 text-secondary shrink-0 mt-0.5" />
                 <div>
-                  <div className="font-bold text-gray-900">Editorial & Review Requests</div>
-                  <a href={`mailto:${SITE_CONFIG.contact.pressEmail}`} className="text-brand-navy hover:underline font-semibold">
-                    {SITE_CONFIG.contact.pressEmail}
-                  </a>
+                  <span className="font-bold text-primary block">Help Desk Line:</span>
+                  <span className="text-gray-600">[+91 80 1234 5678 Placeholder]</span>
+                  <span className="text-gray-400 block text-[11px]">Mon to Fri: 10:00 AM – 6:00 PM IST</span>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <MapPin className="w-5 h-5 text-secondary shrink-0 mt-0.5" />
+                <div>
+                  <span className="font-bold text-primary block">Registered Office:</span>
+                  <span className="text-gray-600">
+                    [Level 4, Cyber City / Outer Ring Road, Bengaluru, Karnataka, India - 560103 Placeholder]
+                  </span>
                 </div>
               </div>
             </div>
-
-            <div className="flex items-center gap-2 text-xs text-gray-500 pt-2 border-t border-gray-100">
-              <Clock size={15} className="text-brand-orange shrink-0" />
-              <span>Response turnaround: Monday to Friday, 9:30 AM – 6:30 PM IST.</span>
-            </div>
           </div>
 
-          {/* Connect on Social */}
-          <div className="bg-brand-navy text-white rounded-3xl p-6 space-y-3 shadow-md">
-            <h4 className="font-black text-sm text-white">Join Our Home Community</h4>
-            <p className="text-xs text-gray-300">
-              Follow our daily home improvement ideas, cookware care guides, and price drop alerts across social networks:
-            </p>
-            <div className="flex items-center gap-2 pt-2">
-              <a href={SITE_CONFIG.social.facebook} target="_blank" rel="noopener noreferrer" className="p-2.5 rounded-xl bg-white/10 hover:bg-brand-orange transition-colors" aria-label="Facebook">
-                <Facebook size={16} />
-              </a>
-              <a href={SITE_CONFIG.social.instagram} target="_blank" rel="noopener noreferrer" className="p-2.5 rounded-xl bg-white/10 hover:bg-brand-orange transition-colors" aria-label="Instagram">
-                <Instagram size={16} />
-              </a>
-              <a href={SITE_CONFIG.social.twitter} target="_blank" rel="noopener noreferrer" className="p-2.5 rounded-xl bg-white/10 hover:bg-brand-orange transition-colors" aria-label="Twitter">
-                <Twitter size={16} />
-              </a>
-              <a href={SITE_CONFIG.social.youtube} target="_blank" rel="noopener noreferrer" className="p-2.5 rounded-xl bg-white/10 hover:bg-brand-orange transition-colors" aria-label="YouTube">
-                <Youtube size={16} />
-              </a>
+          {/* Quick FAQ */}
+          <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-sm space-y-4">
+            <h3 className="font-bold text-base text-primary font-display">
+              Frequently Asked Questions
+            </h3>
+            <div className="space-y-3 text-xs">
+              <div>
+                <h4 className="font-bold text-primary">How do I track an order I made on Amazon?</h4>
+                <p className="text-gray-500 mt-0.5">
+                  Because purchases are executed directly on Amazon, please log into your Amazon India account under &quot;Your Orders&quot; to view live courier tracking.
+                </p>
+              </div>
+              <div className="pt-2 border-t border-gray-100">
+                <h4 className="font-bold text-primary">Does AVNIVO charge extra for using its price comparison?</h4>
+                <p className="text-gray-500 mt-0.5">
+                  Zero. AVNIVO is completely free for all shoppers. We earn small affiliate fees directly from merchant marketing budgets.
+                </p>
+              </div>
             </div>
-          </div>
-
-          {/* Affiliate Note */}
-          <div className="p-4 rounded-2xl bg-amber-50/80 border border-amber-200/80 text-xs text-amber-950 space-y-1">
-            <div className="font-bold flex items-center gap-1.5">
-              <ShieldCheck size={15} className="text-brand-orange" />
-              <span>Merchant Order Support Notice</span>
-            </div>
-            <p className="text-[11px] text-gray-700 leading-relaxed">
-              For order returns, delivery tracking, or replacement queries for items bought on Amazon India or Flipkart, please contact the merchant directly through their customer portal. AVNIVO does not handle order shipments or payments.
-            </p>
           </div>
         </div>
       </div>
     </div>
   );
 }
-
