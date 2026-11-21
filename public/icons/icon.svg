@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#101B35"/>
+      <stop offset="100%" stop-color="#0A1020"/>
+    </linearGradient>
+    <linearGradient id="shieldGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3B82F6"/>
+      <stop offset="100%" stop-color="#1D4ED8"/>
+    </linearGradient>
+    <linearGradient id="accentGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#60A5FA"/>
+      <stop offset="100%" stop-color="#93C5FD"/>
+    </linearGradient>
+  </defs>
+
+  <!-- Background with rounded corners for mobile app icon -->
+  <rect width="512" height="512" rx="112" fill="url(#bgGrad)"/>
+
+  <!-- Subtle glow ring -->
+  <circle cx="256" cy="240" r="180" fill="none" stroke="#2563EB" stroke-width="4" opacity="0.3"/>
+
+  <!-- AVNIVO Shield Motif -->
+  <path d="M256 70 L400 135 C400 270 340 370 256 420 C172 370 112 270 112 135 Z" fill="url(#shieldGrad)" filter="drop-shadow(0 12px 24px rgba(0,0,0,0.4))"/>
+
+  <!-- Inner Chevron / Arrow -->
+  <path d="M256 130 L340 300 L256 260 L172 300 Z" fill="url(#accentGrad)"/>
+
+  <!-- Shopping sparkles / badge -->
+  <circle cx="256" cy="205" r="16" fill="#FFFFFF"/>
+
+  <!-- Brand Typography -->
+  <text x="256" y="475" text-anchor="middle" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="900" font-size="38" letter-spacing="8" fill="#FFFFFF">AVNIVO</text>
+</svg>

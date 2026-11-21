@@ -3,6 +3,7 @@ import "./globals.css";
 import { Providers } from "@/components/common/Providers";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
+import { PwaInstallPrompt } from "@/components/common/PwaInstallPrompt";
 
 export const metadata: Metadata = {
   title: "AVNIVO – Discover. Compare. Shop. | Next-Gen E-commerce & Affiliate Platform",
@@ -34,6 +35,15 @@ export const metadata: Metadata = {
     title: "AVNIVO – Discover. Compare. Shop.",
     description: "Compare prices and discover verified shopping deals in India.",
   },
+  icons: {
+    icon: "/icons/icon.svg",
+    apple: "/icons/icon.svg",
+  },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "AVNIVO",
+  },
 };
 
 export default function RootLayout({
@@ -48,6 +58,7 @@ export default function RootLayout({
           <Header />
           <main className="flex-1">{children}</main>
           <Footer />
+          <PwaInstallPrompt />
         </Providers>
       </body>
     </html>
