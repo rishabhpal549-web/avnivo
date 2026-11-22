@@ -20,6 +20,7 @@ import {
   Gift,
 } from "lucide-react";
 import { formatINR, formatTimeAgo } from "@/lib/utils";
+import { shareWithFriends } from "@/lib/shareHelper";
 import { MerchantComparisonTable } from "@/components/common/MerchantComparisonTable";
 import { AffiliateDisclosureBanner } from "@/components/common/AffiliateDisclosureBanner";
 import { ProductCard } from "@/components/common/ProductCard";
@@ -255,13 +256,36 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
               </button>
 
               <button
-                onClick={handleCopyLink}
-                className="p-3.5 rounded-xl border border-gray-200 text-gray-600 hover:text-primary hover:bg-surface transition-colors flex items-center justify-center"
-                title="Share product link"
+                onClick={() =>
+                  shareWithFriends({
+                    title: product.name,
+                    indicativePrice: product.indicativePrice,
+                    discountPercent: product.discountPercent,
+                    slug: product.slug,
+                  })
+                }
+                className="p-3.5 rounded-xl border border-gray-200 text-gray-600 hover:text-secondary hover:bg-surface hover:border-secondary/40 transition-colors flex items-center justify-center group"
+                title="दोस्तों को शेयर करें (Share with Friends)"
               >
-                {copied ? <Check className="w-5 h-5 text-green-600" /> : <Share2 className="w-5 h-5" />}
+                <Share2 className="w-5 h-5 group-hover:scale-110 transition-transform" />
               </button>
             </div>
+
+            {/* Share With Friends Full Action Button (Clean, no external logo) */}
+            <button
+              onClick={() =>
+                shareWithFriends({
+                  title: product.name,
+                  indicativePrice: product.indicativePrice,
+                  discountPercent: product.discountPercent,
+                  slug: product.slug,
+                })
+              }
+              className="w-full py-2.5 px-4 bg-surface hover:bg-blue-50/60 text-primary font-bold text-xs sm:text-sm rounded-xl border border-gray-200 hover:border-secondary/40 shadow-sm transition-all flex items-center justify-center gap-2 group"
+            >
+              <Share2 className="w-4 h-4 text-secondary group-hover:scale-110 transition-transform" />
+              <span>दोस्तों को शेयर करें (Share with Friends)</span>
+            </button>
 
             {/* Share & Earn Card */}
             <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-orange-200/80 rounded-2xl p-3.5 flex items-center justify-between gap-3 text-xs">

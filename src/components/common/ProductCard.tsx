@@ -2,8 +2,9 @@
 
 import React from "react";
 import Link from "next/link";
-import { Heart, Scale, ExternalLink, Star, ArrowRight, ShoppingBag } from "lucide-react";
+import { Heart, Scale, ExternalLink, Star, ArrowRight, ShoppingBag, Share2 } from "lucide-react";
 import { formatINR } from "@/lib/utils";
+import { shareWithFriends } from "@/lib/shareHelper";
 import { useWishlist } from "./WishlistContext";
 import { useCompare } from "./CompareContext";
 
@@ -175,6 +176,23 @@ export function ProductCard({ product, layout = "grid" }: ProductCardProps) {
             title={inWish ? "Remove from wishlist" : "Add to wishlist"}
           >
             <Heart className={`w-3.5 h-3.5 ${inWish ? "fill-red-500" : ""}`} />
+          </button>
+
+          <button
+            onClick={(e) => {
+              e.preventDefault();
+              e.stopPropagation();
+              shareWithFriends({
+                title: product.name,
+                indicativePrice: product.indicativePrice,
+                discountPercent: product.discountPercent,
+                slug: product.slug,
+              });
+            }}
+            className="p-1.5 rounded-lg bg-white/90 backdrop-blur-md shadow-sm border border-gray-200/80 text-gray-400 hover:text-secondary hover:bg-white transition-colors"
+            title="दोस्तों को शेयर करें"
+          >
+            <Share2 className="w-3.5 h-3.5" />
           </button>
         </div>
 

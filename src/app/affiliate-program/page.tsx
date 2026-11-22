@@ -23,6 +23,7 @@ import {
   BadgeCheck,
 } from "lucide-react";
 import { AvnivoLogo } from "@/components/common/AvnivoLogo";
+import { shareWithFriends } from "@/lib/shareHelper";
 
 interface PartnerData {
   name: string;
@@ -479,17 +480,18 @@ export default function AffiliateProgramPage() {
                     {copiedCustom ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
                     <span>{copiedCustom ? "कॉपी हुआ" : "कॉपी करें"}</span>
                   </button>
-                  <a
-                    href={`https://api.whatsapp.com/send?text=${encodeURIComponent(
-                      `🔥 Check out this awesome deal on AVNIVO: ${generatedCustomLink}`
-                    )}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl flex items-center gap-1 shrink-0"
+                  <button
+                    onClick={() =>
+                      shareWithFriends({
+                        title: "AVNIVO Best Deal Alert",
+                        customUrl: generatedCustomLink,
+                      })
+                    }
+                    className="px-4 py-2 bg-secondary hover:bg-secondary-dark text-white font-bold rounded-xl flex items-center gap-1.5 shrink-0 transition-colors"
                   >
-                    <Smartphone className="w-3.5 h-3.5" />
-                    <span>WhatsApp</span>
-                  </a>
+                    <Share2 className="w-3.5 h-3.5" />
+                    <span>दोस्तों को भेजें</span>
+                  </button>
                 </div>
               </div>
             )}
@@ -528,15 +530,19 @@ export default function AffiliateProgramPage() {
                     </div>
 
                     <div className="space-y-2 pt-2 border-t border-gray-100">
-                      <a
-                        href={`https://api.whatsapp.com/send?text=${encodeURIComponent(waMessage)}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="w-full py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-sm transition-colors"
+                      <button
+                        onClick={() =>
+                          shareWithFriends({
+                            title: item.title,
+                            indicativePrice: item.price.replace("₹", ""),
+                            slug: item.slug,
+                          })
+                        }
+                        className="w-full py-2 bg-secondary hover:bg-secondary-dark text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-sm transition-colors"
                       >
-                        <Smartphone className="w-3.5 h-3.5" />
-                        <span>WhatsApp पर शेयर करें</span>
-                      </a>
+                        <Share2 className="w-3.5 h-3.5" />
+                        <span>दोस्तों को शेयर करें (Share with Friends)</span>
+                      </button>
                       <button
                         onClick={() => handleCopy(itemTrackedLink, "custom")}
                         className="w-full py-1.5 bg-surface hover:bg-gray-100 text-charcoal font-semibold rounded-xl text-[11px] flex items-center justify-center gap-1 transition-colors"
