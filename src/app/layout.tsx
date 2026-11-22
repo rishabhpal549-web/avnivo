@@ -45,9 +45,6 @@ export const metadata: Metadata = {
   verification: {
     google: "google0b1c602e12dd4b99",
   },
-  other: {
-    "google-site-verification": "google0b1c602e12dd4b99",
-  },
   appleWebApp: {
     capable: true,
     statusBarStyle: "black-translucent",
