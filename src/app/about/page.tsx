@@ -13,7 +13,9 @@ export default function AboutPage() {
     <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12">
       {/* Hero Section */}
       <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
-        <AvnivoLogo size="lg" />
+        <div className="flex justify-center">
+          <AvnivoLogo size="lg" />
+        </div>
         <h1 className="text-3xl sm:text-5xl font-black text-primary font-display mt-4 leading-tight">
           Empowering Indian Shoppers with Radical Price Transparency
         </h1>

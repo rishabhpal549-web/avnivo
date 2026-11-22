@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
+  Image,
   StyleSheet,
   ScrollView,
   TextInput,
@@ -55,9 +56,16 @@ export function HomeScreen({ navigation }: any) {
     >
       {/* Brand Header */}
       <View style={styles.header}>
-        <View>
-          <Text style={styles.headerBrand}>AVNIVO</Text>
-          <Text style={styles.headerTagline}>Discover. Compare. Shop.</Text>
+        <View style={{ flexDirection: "row", alignItems: "center", gap: 10 }}>
+          <Image
+            source={require("../../assets/icon.png")}
+            style={{ width: 42, height: 42, borderRadius: 21 }}
+            resizeMode="contain"
+          />
+          <View>
+            <Text style={styles.headerBrand}>AVNIVO</Text>
+            <Text style={styles.headerTagline}>Smart Living, Better Home.</Text>
+          </View>
         </View>
         <View style={styles.badge}>
           <Text style={styles.badgeText}>India's #1 Hub</Text>

@@ -36,8 +36,8 @@ export const metadata: Metadata = {
     description: "Compare prices and discover verified shopping deals in India.",
   },
   icons: {
-    icon: "/icons/icon.svg",
-    apple: "/icons/icon.svg",
+    icon: "/logo.png",
+    apple: "/logo.png",
   },
   appleWebApp: {
     capable: true,
