@@ -35,10 +35,10 @@ export function shareWithFriends({
   }
 
   // Pre-formatted message for friends
-  const priceText = indicativePrice ? `\n💰 सिर्फ ₹${Number(indicativePrice).toLocaleString("en-IN")} में!` : "";
+  const priceText = indicativePrice ? `\n💰 Only ₹${Number(indicativePrice).toLocaleString("en-IN")}!` : "";
   const discountText = discountPercent && discountPercent > 0 ? ` (${discountPercent}% OFF)` : "";
 
-  const text = `🔥 *${title}*${priceText}${discountText}\n\n✨ AVNIVO पर बेहतरीन डील और प्राइस कंपैरिजन देखें:\n👉 ${targetUrl}`;
+  const text = `🔥 *${title}*${priceText}${discountText}\n\n✨ Check out this verified deal & price comparison on AVNIVO:\n👉 ${targetUrl}`;
 
   // Try native navigator.share first on mobile devices if available
   if (navigator.share && /Android|iPhone|iPad|Mobile/i.test(navigator.userAgent)) {

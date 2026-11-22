@@ -497,7 +497,7 @@ export function Header() {
               className="py-2 px-3 text-xs font-bold bg-orange-50 text-secondary rounded-xl flex items-center gap-2"
             >
               <Sparkles className="w-4 h-4 text-orange-500" />
-              <span>🎁 Affiliate &amp; Partner Program (कमाई करें)</span>
+              <span>🎁 Affiliate &amp; Partner Program (Earn with Us)</span>
             </Link>
 
             <Link

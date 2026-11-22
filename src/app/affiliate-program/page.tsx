@@ -10,8 +10,6 @@ import {
   DollarSign,
   Copy,
   Check,
-  Smartphone,
-  ExternalLink,
   ChevronRight,
   ShieldCheck,
   Users,
@@ -55,7 +53,7 @@ export default function AffiliateProgramPage() {
     mobile: "",
     email: "",
     upiId: "",
-    promotionChannel: "WhatsApp",
+    promotionChannel: "WhatsApp Groups & Status",
   });
 
   const baseUrl =
@@ -78,7 +76,7 @@ export default function AffiliateProgramPage() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.mobile) {
-      alert("कृपया अपना नाम और मोबाइल नंबर भरें (Please enter Name and Mobile)");
+      alert("Please enter your Name and Mobile Number");
       return;
     }
 
@@ -95,7 +93,7 @@ export default function AffiliateProgramPage() {
         setPartner(data.partner);
         localStorage.setItem("avnivo_partner_account", JSON.stringify(data.partner));
       } else {
-        alert(data.error || "रजिस्ट्रेशन असफल रहा, कृपया पुनः प्रयास करें।");
+        alert(data.error || "Registration failed, please try again.");
       }
     } catch (err) {
       // Local fallback if API network issues
@@ -139,7 +137,6 @@ export default function AffiliateProgramPage() {
     if (!customProductUrl.trim() || !partner) return;
 
     let target = customProductUrl.trim();
-    // If user provided a path like /product/smart-lamp
     if (target.startsWith("/")) {
       target = `${baseUrl}${target}`;
     } else if (!target.startsWith("http")) {
@@ -153,11 +150,11 @@ export default function AffiliateProgramPage() {
 
   const handleRequestPayout = () => {
     if (!partner?.upiId) {
-      alert("कृपया पहले अपनी UPI ID (GPay/PhonePe) अपडेट करें!");
+      alert("Please update your UPI ID (GPay/PhonePe/Paytm) to receive payouts!");
       return;
     }
     setPayoutSuccess(true);
-    setTimeout(() => setPayoutSuccess(false), 4000);
+    setTimeout(() => setPayoutSuccess(false), 4500);
   };
 
   const trendingPromoItems = [
@@ -166,28 +163,28 @@ export default function AffiliateProgramPage() {
       price: "₹349",
       commission: "₹35 (10%)",
       slug: "360-rotating-kitchen-faucet-extender",
-      tagline: "हर किचन के लिए जरूरी गैजेट! 70% पानी की बचत।",
+      tagline: "Essential kitchen accessory! Saves up to 70% tap water.",
     },
     {
       title: "Mini Heat Bag Sealer for Snacks & Groceries",
       price: "₹249",
       commission: "₹25 (10%)",
       slug: "mini-heat-bag-sealer-handheld",
-      tagline: "चिप्स और दालें कभी सीलने से खराब नहीं होंगी।",
+      tagline: "Keeps chips, groceries, and pulses fresh without moisture leaks.",
     },
     {
       title: "Sunset Projection LED Lamp with 16 Colors",
       price: "₹499",
       commission: "₹45 (9%)",
       slug: "sunset-projection-lamp-16-colors",
-      tagline: "रूम डेकोर और इंस्टाग्राम रील्स के लिए बेस्ट लैम्प।",
+      tagline: "Aesthetic ambient lighting perfect for room decor & reels.",
     },
     {
       title: "Multipurpose Cable Organizer Clips (6 Pack)",
       price: "₹199",
       commission: "₹20 (10%)",
       slug: "silicone-desk-cable-organizer-clips",
-      tagline: "टेबल पर तारों का झंझट हमेशा के लिए खत्म।",
+      tagline: "Tidy up messy charger and desktop cables permanently.",
     },
   ];
 
@@ -199,34 +196,34 @@ export default function AffiliateProgramPage() {
         <div className="max-w-6xl mx-auto relative z-10">
           <div className="inline-flex items-center gap-2 px-3 py-1 bg-secondary/30 border border-secondary/50 rounded-full text-accent text-xs font-bold uppercase tracking-wider mb-4">
             <Gift className="w-3.5 h-3.5" />
-            <span>AVNIVO Creator &amp; Partner Program</span>
+            <span>AVNIVO Creator &amp; Affiliate Partner Program</span>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
             <div className="lg:col-span-7 space-y-4">
               <h1 className="text-3xl sm:text-5xl font-extrabold tracking-tight font-display leading-tight">
-                घर बैठे प्रोडक्ट्स शेयर करें और <span className="text-accent">10% तक कमीशन</span> कमाएं!
+                Share Useful Products &amp; Earn <span className="text-accent">Up to 10% Commission</span>!
               </h1>
               <p className="text-sm sm:text-base text-gray-300 leading-relaxed max-w-xl">
-                AVNIVO पार्टनर प्रोग्राम में फ्री रजिस्टर करें। किचन, होम, गैजेट्स और लाइफस्टाइल के उपयोगी प्रोडक्ट्स अपने WhatsApp, Instagram और दोस्तों के साथ शेयर करें। जब भी कोई खरीदेगा, सीधा कमीशन आपके बैंक/UPI में!
+                Join the free AVNIVO Partner Program. Recommend useful kitchen, home, gadgets, and lifestyle products with your friends, followers, and network. Earn direct commission payouts credited straight to your UPI account whenever someone buys!
               </p>
 
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 pt-2 text-xs">
                 <div className="bg-white/10 p-2.5 rounded-xl border border-white/10">
-                  <p className="font-bold text-accent text-base">₹0 खर्च</p>
-                  <p className="text-gray-300 text-[11px]">100% फ्री जॉइनिंग</p>
+                  <p className="font-bold text-accent text-base">₹0 Cost</p>
+                  <p className="text-gray-300 text-[11px]">100% Free to Join</p>
                 </div>
                 <div className="bg-white/10 p-2.5 rounded-xl border border-white/10">
-                  <p className="font-bold text-accent text-base">10% तक</p>
-                  <p className="text-gray-300 text-[11px]">हाई कमीशन रेट</p>
+                  <p className="font-bold text-accent text-base">Up to 10%</p>
+                  <p className="text-gray-300 text-[11px]">High Commission</p>
                 </div>
                 <div className="bg-white/10 p-2.5 rounded-xl border border-white/10">
-                  <p className="font-bold text-accent text-base">30 दिन</p>
-                  <p className="text-gray-300 text-[11px]">कुकी विंडो ट्रैकिंग</p>
+                  <p className="font-bold text-accent text-base">30 Days</p>
+                  <p className="text-gray-300 text-[11px]">Cookie Attribution</p>
                 </div>
                 <div className="bg-white/10 p-2.5 rounded-xl border border-white/10">
                   <p className="font-bold text-accent text-base">Instant UPI</p>
-                  <p className="text-gray-300 text-[11px]">सीधा बैंक ट्रांसफर</p>
+                  <p className="text-gray-300 text-[11px]">Direct Payouts</p>
                 </div>
               </div>
             </div>
@@ -238,19 +235,19 @@ export default function AffiliateProgramPage() {
                   <div className="flex items-center gap-2 mb-4">
                     <BadgeCheck className="w-5 h-5 text-secondary" />
                     <h3 className="text-lg font-bold text-primary font-display">
-                      30 सेकंड में पार्टनर बनें
+                      Become a Partner in 30 Seconds
                     </h3>
                   </div>
 
                   <form onSubmit={handleRegister} className="space-y-3.5 text-xs">
                     <div>
                       <label className="block font-semibold text-gray-700 mb-1">
-                        आपका पूरा नाम (Full Name) *
+                        Full Name *
                       </label>
                       <input
                         type="text"
                         required
-                        placeholder="उदा. राहुल शर्मा"
+                        placeholder="e.g. Rahul Sharma"
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                         className="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-secondary text-xs"
@@ -259,12 +256,12 @@ export default function AffiliateProgramPage() {
 
                     <div>
                       <label className="block font-semibold text-gray-700 mb-1">
-                        WhatsApp / मोबाइल नंबर *
+                        Mobile Number *
                       </label>
                       <input
                         type="tel"
                         required
-                        placeholder="उदा. 9876543210"
+                        placeholder="e.g. 9876543210"
                         value={formData.mobile}
                         onChange={(e) => setFormData({ ...formData, mobile: e.target.value })}
                         className="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-secondary text-xs"
@@ -273,11 +270,11 @@ export default function AffiliateProgramPage() {
 
                     <div>
                       <label className="block font-semibold text-gray-700 mb-1">
-                        UPI ID (कमीशन प्राप्त करने के लिए)
+                        UPI ID (To receive direct commission payouts)
                       </label>
                       <input
                         type="text"
-                        placeholder="उदा. yourname@okhdfcbank या 9876543210@paytm"
+                        placeholder="e.g. yourname@okhdfcbank or 9876543210@paytm"
                         value={formData.upiId}
                         onChange={(e) => setFormData({ ...formData, upiId: e.target.value })}
                         className="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-secondary text-xs"
@@ -286,18 +283,18 @@ export default function AffiliateProgramPage() {
 
                     <div>
                       <label className="block font-semibold text-gray-700 mb-1">
-                        आप लिंक कहाँ शेयर करेंगे?
+                        Where will you share product links?
                       </label>
                       <select
                         value={formData.promotionChannel}
                         onChange={(e) => setFormData({ ...formData, promotionChannel: e.target.value })}
                         className="w-full px-3.5 py-2.5 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-secondary text-xs bg-white"
                       >
-                        <option value="WhatsApp">WhatsApp Groups &amp; Status</option>
-                        <option value="Instagram">Instagram (Reels / Bio / Stories)</option>
-                        <option value="Telegram">Telegram Deals Channel</option>
-                        <option value="YouTube">YouTube Shorts / Videos</option>
-                        <option value="Friends">दोस्तों और परिवार के साथ</option>
+                        <option value="WhatsApp Groups & Status">WhatsApp Groups &amp; Status</option>
+                        <option value="Instagram (Reels / Bio)">Instagram (Reels / Bio / Stories)</option>
+                        <option value="Telegram Deals Channel">Telegram Deals Channel</option>
+                        <option value="YouTube Shorts / Videos">YouTube Shorts / Videos</option>
+                        <option value="Friends & Family">Friends, Family &amp; Community</option>
                       </select>
                     </div>
 
@@ -307,16 +304,16 @@ export default function AffiliateProgramPage() {
                       className="w-full py-3 bg-secondary hover:bg-secondary-dark text-white font-bold rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 mt-2"
                     >
                       {loading ? (
-                        <span>कृपया प्रतीक्षा करें...</span>
+                        <span>Creating account...</span>
                       ) : (
                         <>
                           <Zap className="w-4 h-4 text-accent" />
-                          <span>पार्टनर अकाउंट बनाएं (फ्री)</span>
+                          <span>Create Free Partner Account</span>
                         </>
                       )}
                     </button>
                     <p className="text-[10px] text-gray-400 text-center">
-                      साइन-अप करके आप AVNIVO पार्टनर नीतियों से सहमत होते हैं।
+                      By signing up, you agree to the AVNIVO Partner Program policies.
                     </p>
                   </form>
                 </div>
@@ -325,17 +322,17 @@ export default function AffiliateProgramPage() {
                   <div className="flex items-center justify-between">
                     <div>
                       <span className="text-[10px] uppercase font-bold text-accent tracking-wider">
-                        एक्टिव पार्टनर
+                        Active Partner
                       </span>
                       <h3 className="text-xl font-bold">{partner.name}</h3>
                     </div>
                     <span className="bg-accent text-primary px-3 py-1 rounded-full text-xs font-bold">
-                      {partner.commissionRate}% कमीशन
+                      {partner.commissionRate}% Commission
                     </span>
                   </div>
 
                   <div className="bg-white/5 p-3 rounded-2xl border border-white/10 space-y-1.5 text-xs">
-                    <p className="text-gray-300 text-[11px]">आपका पर्सनल रेफरल लिंक:</p>
+                    <p className="text-gray-300 text-[11px]">Your Personal Referral Link:</p>
                     <div className="flex items-center gap-2">
                       <input
                         type="text"
@@ -348,7 +345,7 @@ export default function AffiliateProgramPage() {
                         className="px-3 py-2 bg-secondary text-white font-bold rounded-xl hover:bg-secondary-dark flex items-center gap-1 shrink-0"
                       >
                         {copiedLink ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                        <span>{copiedLink ? "कॉपी हुआ" : "कॉपी"}</span>
+                        <span>{copiedLink ? "Copied" : "Copy"}</span>
                       </button>
                     </div>
                   </div>
@@ -357,7 +354,7 @@ export default function AffiliateProgramPage() {
                     href="#dashboard"
                     className="block text-center py-2.5 bg-accent hover:bg-blue-400 text-primary font-bold rounded-xl transition-colors text-xs"
                   >
-                    पार्टनर डैशबोर्ड और टूल्स खोलें ↓
+                    Open Partner Dashboard &amp; Tools ↓
                   </a>
                 </div>
               )}
@@ -372,10 +369,10 @@ export default function AffiliateProgramPage() {
           <div className="flex items-center justify-between flex-wrap gap-4 border-b border-gray-200 pb-4">
             <div>
               <h2 className="text-2xl font-bold text-primary font-display">
-                पार्टनर कंट्रोल पैनल (Affiliate Dashboard)
+                Partner Control Panel (Affiliate Dashboard)
               </h2>
               <p className="text-xs text-gray-500">
-                रेफरल कोड: <span className="font-mono font-bold text-secondary">{partner.affiliateCode}</span> • UPI ID: {partner.upiId || "अपडेट नहीं"}
+                Referral Code: <span className="font-mono font-bold text-secondary">{partner.affiliateCode}</span> • Payout UPI: {partner.upiId || "Not updated"}
               </p>
             </div>
             <button
@@ -383,7 +380,7 @@ export default function AffiliateProgramPage() {
               className="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs rounded-xl shadow transition-colors flex items-center gap-1.5"
             >
               <DollarSign className="w-4 h-4" />
-              <span>पेआउट रिक्वेस्ट भेजें (UPI)</span>
+              <span>Request Payout (UPI)</span>
             </button>
           </div>
 
@@ -391,7 +388,7 @@ export default function AffiliateProgramPage() {
             <div className="bg-emerald-50 border border-emerald-200 text-emerald-800 p-4 rounded-2xl text-xs flex items-center gap-2 animate-fade-in">
               <Check className="w-4 h-4 text-emerald-600 shrink-0" />
               <span>
-                आपकी पेआउट रिक्वेस्ट प्राप्त हो गई है! ₹200 से अधिक की शेष राशि 24-48 घंटों के भीतर आपकी UPI ID पर भेज दी जाएगी।
+                Your payout request has been submitted! Balances above ₹200 are verified and sent to your registered UPI ID within 24-48 business hours.
               </span>
             </div>
           )}
@@ -400,38 +397,38 @@ export default function AffiliateProgramPage() {
           <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
               <div className="flex items-center justify-between text-gray-400 mb-2">
-                <span className="text-xs font-semibold">कुल लिंक क्लिक्स</span>
+                <span className="text-xs font-semibold">Total Link Clicks</span>
                 <TrendingUp className="w-4 h-4 text-secondary" />
               </div>
               <p className="text-2xl font-black text-primary font-display">{partner.totalClicks}</p>
-              <p className="text-[11px] text-gray-400 mt-1">लाइव विज़िटर्स</p>
+              <p className="text-[11px] text-gray-400 mt-1">Live Unique Visitors</p>
             </div>
 
             <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
               <div className="flex items-center justify-between text-gray-400 mb-2">
-                <span className="text-xs font-semibold">सफल ऑर्डर्स</span>
+                <span className="text-xs font-semibold">Successful Orders</span>
                 <Award className="w-4 h-4 text-emerald-500" />
               </div>
               <p className="text-2xl font-black text-emerald-600 font-display">{partner.totalOrders}</p>
-              <p className="text-[11px] text-gray-400 mt-1">खरीदारी कन्वर्ज़न</p>
+              <p className="text-[11px] text-gray-400 mt-1">Purchase Conversions</p>
             </div>
 
             <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
               <div className="flex items-center justify-between text-gray-400 mb-2">
-                <span className="text-xs font-semibold">कुल अनुमानित कमाई</span>
+                <span className="text-xs font-semibold">Total Estimated Earnings</span>
                 <DollarSign className="w-4 h-4 text-accent" />
               </div>
               <p className="text-2xl font-black text-primary font-display">₹{partner.totalEarnings}</p>
-              <p className="text-[11px] text-gray-400 mt-1">कुल अर्न्ड कमीशन</p>
+              <p className="text-[11px] text-gray-400 mt-1">Lifetime Commission</p>
             </div>
 
             <div className="bg-white p-5 rounded-2xl border border-gray-100 shadow-sm">
               <div className="flex items-center justify-between text-gray-400 mb-2">
-                <span className="text-xs font-semibold">उपलब्ध बैलेंस (Payable)</span>
+                <span className="text-xs font-semibold">Available Balance (Payable)</span>
                 <Sparkles className="w-4 h-4 text-amber-500" />
               </div>
               <p className="text-2xl font-black text-amber-600 font-display">₹{partner.pendingPayout}</p>
-              <p className="text-[11px] text-gray-400 mt-1">न्यूनतम पेआउट ₹200</p>
+              <p className="text-[11px] text-gray-400 mt-1">Min. Payout ₹200</p>
             </div>
           </div>
 
@@ -440,17 +437,17 @@ export default function AffiliateProgramPage() {
             <div className="flex items-center gap-2">
               <Zap className="w-5 h-5 text-secondary" />
               <h3 className="text-base font-bold text-primary font-display">
-                कस्टम प्रोडक्ट लिंक जनरेटर (Create Tracked Link)
+                Custom Product Link Generator (Tracked URL)
               </h3>
             </div>
             <p className="text-xs text-gray-500">
-              AVNIVO के किसी भी प्रोडक्ट का लिंक यहाँ डालें, आपको तुरंत आपका पर्सनल एफिलिएट लिंक मिल जाएगा:
+              Paste any AVNIVO product link or slug below to instantly generate your tracked affiliate link:
             </p>
 
             <form onSubmit={handleGenerateLink} className="flex items-center gap-2 flex-wrap sm:flex-nowrap">
               <input
                 type="text"
-                placeholder="उदा. https://avnivo.vercel.app/product/smart-lamp या सिर्फ प्रोडक्ट का नाम"
+                placeholder="e.g. https://avnivo.vercel.app/product/360-rotating-kitchen-faucet-extender or product slug"
                 value={customProductUrl}
                 onChange={(e) => setCustomProductUrl(e.target.value)}
                 className="w-full px-4 py-3 rounded-xl border border-gray-300 focus:outline-none focus:ring-2 focus:ring-secondary text-xs"
@@ -459,13 +456,13 @@ export default function AffiliateProgramPage() {
                 type="submit"
                 className="w-full sm:w-auto px-6 py-3 bg-primary hover:bg-primary-dark text-white font-bold rounded-xl shadow transition-colors text-xs shrink-0"
               >
-                लिंक बनाएं
+                Generate Link
               </button>
             </form>
 
             {generatedCustomLink && (
               <div className="bg-blue-50 border border-blue-200 p-4 rounded-2xl space-y-2 mt-3 animate-fade-in text-xs">
-                <p className="font-semibold text-primary">आपका ट्रैक्ड लिंक तैयार है:</p>
+                <p className="font-semibold text-primary">Your tracked link is ready to share:</p>
                 <div className="flex items-center gap-2">
                   <input
                     type="text"
@@ -478,19 +475,19 @@ export default function AffiliateProgramPage() {
                     className="px-4 py-2 bg-secondary text-white font-bold rounded-xl hover:bg-secondary-dark flex items-center gap-1 shrink-0"
                   >
                     {copiedCustom ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
-                    <span>{copiedCustom ? "कॉपी हुआ" : "कॉपी करें"}</span>
+                    <span>{copiedCustom ? "Copied" : "Copy Link"}</span>
                   </button>
                   <button
                     onClick={() =>
                       shareWithFriends({
-                        title: "AVNIVO Best Deal Alert",
+                        title: "AVNIVO Best Deal Recommendation",
                         customUrl: generatedCustomLink,
                       })
                     }
                     className="px-4 py-2 bg-secondary hover:bg-secondary-dark text-white font-bold rounded-xl flex items-center gap-1.5 shrink-0 transition-colors"
                   >
                     <Share2 className="w-3.5 h-3.5" />
-                    <span>दोस्तों को भेजें</span>
+                    <span>Share with Friends</span>
                   </button>
                 </div>
               </div>
@@ -501,17 +498,16 @@ export default function AffiliateProgramPage() {
           <div className="space-y-4">
             <div>
               <h3 className="text-xl font-bold text-primary font-display">
-                🔥 सबसे ज्यादा बिकने वाले प्रोडक्ट्स (तुरंत शेयर करें)
+                🔥 High-Converting Top Deals (Ready to Share)
               </h3>
               <p className="text-xs text-gray-500">
-                इन प्रोडक्ट्स को लोग सबसे ज्यादा खरीदते हैं। सीधे WhatsApp या सोशल मीडिया पर शेयर करें:
+                These small daily-use products have the highest conversion rates. Share directly with your network:
               </p>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {trendingPromoItems.map((item, idx) => {
                 const itemTrackedLink = `${baseUrl}/product/${item.slug}?ref=${partner.affiliateCode}`;
-                const waMessage = `🔥 *${item.title}*\n💰 सिर्फ ${item.price} में!\n✨ ${item.tagline}\n👉 यहाँ से देखें: ${itemTrackedLink}`;
 
                 return (
                   <div
@@ -522,7 +518,7 @@ export default function AffiliateProgramPage() {
                       <div className="flex items-center justify-between text-[11px] mb-1">
                         <span className="font-bold text-secondary font-mono">{item.price}</span>
                         <span className="bg-emerald-50 text-emerald-700 font-bold px-2 py-0.5 rounded-full">
-                          कमाई: {item.commission}
+                          Earn: {item.commission}
                         </span>
                       </div>
                       <h4 className="font-bold text-xs text-primary line-clamp-2">{item.title}</h4>
@@ -541,14 +537,14 @@ export default function AffiliateProgramPage() {
                         className="w-full py-2 bg-secondary hover:bg-secondary-dark text-white font-bold rounded-xl text-xs flex items-center justify-center gap-1.5 shadow-sm transition-colors"
                       >
                         <Share2 className="w-3.5 h-3.5" />
-                        <span>दोस्तों को शेयर करें (Share with Friends)</span>
+                        <span>Share with Friends</span>
                       </button>
                       <button
                         onClick={() => handleCopy(itemTrackedLink, "custom")}
                         className="w-full py-1.5 bg-surface hover:bg-gray-100 text-charcoal font-semibold rounded-xl text-[11px] flex items-center justify-center gap-1 transition-colors"
                       >
                         <Copy className="w-3 h-3" />
-                        <span>लिंक कॉपी करें</span>
+                        <span>Copy Link</span>
                       </button>
                     </div>
                   </div>
@@ -563,10 +559,10 @@ export default function AffiliateProgramPage() {
       <section className="max-w-6xl mx-auto px-4 sm:px-6 py-12 border-t border-gray-200">
         <div className="text-center max-w-xl mx-auto mb-10 space-y-2">
           <h2 className="text-2xl sm:text-3xl font-extrabold text-primary font-display">
-            AVNIVO से कमाई कैसे होती है?
+            How You Earn with AVNIVO
           </h2>
           <p className="text-xs sm:text-sm text-gray-500">
-            केवल 3 आसान स्टेप्स में आपका खुद का ऑनलाइन एफिलिएट बिज़नेस शुरू करें
+            Start your online affiliate earning journey in 3 simple steps
           </p>
         </div>
 
@@ -575,9 +571,9 @@ export default function AffiliateProgramPage() {
             <div className="w-12 h-12 rounded-2xl bg-primary text-accent mx-auto flex items-center justify-center font-bold text-lg font-display">
               1
             </div>
-            <h3 className="font-bold text-base text-primary">फ्री रजिस्ट्रेशन करें</h3>
+            <h3 className="font-bold text-base text-primary">Join for Free</h3>
             <p className="text-xs text-gray-500 leading-relaxed">
-              अपना नाम और मोबाइल नंबर डालकर तुरंत अपना पर्सनल रेफरल कोड और डैशबोर्ड पाएं। कोई फीस या इन्वेस्टमेंट नहीं।
+              Sign up in 30 seconds with your name and UPI ID. No registration fees, inventory, or upfront investment required.
             </p>
           </div>
 
@@ -585,9 +581,9 @@ export default function AffiliateProgramPage() {
             <div className="w-12 h-12 rounded-2xl bg-secondary text-white mx-auto flex items-center justify-center font-bold text-lg font-display">
               2
             </div>
-            <h3 className="font-bold text-base text-primary">प्रोडक्ट्स शेयर करें</h3>
+            <h3 className="font-bold text-base text-primary">Share Products</h3>
             <p className="text-xs text-gray-500 leading-relaxed">
-              सस्ते और उपयोगी घरेलू प्रोडक्ट्स के लिंक्स अपने WhatsApp ग्रुप्स, स्टेटस, Instagram बायो या दोस्तों को भेजें।
+              Share useful and affordable home, kitchen, and gadget recommendations across your network, social media, or friends.
             </p>
           </div>
 
@@ -595,9 +591,9 @@ export default function AffiliateProgramPage() {
             <div className="w-12 h-12 rounded-2xl bg-emerald-600 text-white mx-auto flex items-center justify-center font-bold text-lg font-display">
               3
             </div>
-            <h3 className="font-bold text-base text-primary">सीधा UPI पेआउट पाएं</h3>
+            <h3 className="font-bold text-base text-primary">Direct UPI Payouts</h3>
             <p className="text-xs text-gray-500 leading-relaxed">
-              जब भी कोई आपके लिंक से खरीदेगा, आपका कमीशन आपके डैशबोर्ड में जुड़ेगा और आप सीधे Google Pay / PhonePe पर पैसे निकाल सकेंगे।
+              When someone purchases through your link, commissions are credited to your balance and paid straight to Google Pay / PhonePe.
             </p>
           </div>
         </div>
@@ -608,16 +604,16 @@ export default function AffiliateProgramPage() {
         <div className="bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-sm space-y-4">
           <h3 className="text-lg font-bold text-primary font-display flex items-center gap-2">
             <Award className="w-5 h-5 text-secondary" />
-            <span>कैटेगरी अनुसार कमीशन दरें (Commission Rates)</span>
+            <span>Commission Rates by Category</span>
           </h3>
 
           <div className="overflow-x-auto">
             <table className="w-full text-left text-xs">
               <thead>
                 <tr className="border-b border-gray-200 text-gray-400 uppercase font-semibold">
-                  <th className="pb-3">प्रोडक्ट कैटेगरी</th>
-                  <th className="pb-3">कमीशन प्रतिशत</th>
-                  <th className="pb-3">अनुमानित कमाई प्रति सेल</th>
+                  <th className="pb-3">Product Category</th>
+                  <th className="pb-3">Commission Rate</th>
+                  <th className="pb-3">Est. Earnings per Sale</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
@@ -655,28 +651,28 @@ export default function AffiliateProgramPage() {
       {/* 6. FAQ Accordion */}
       <section className="max-w-4xl mx-auto px-4 sm:px-6 py-10 space-y-4">
         <h3 className="text-xl font-bold text-primary font-display text-center mb-6">
-          अक्सर पूछे जाने वाले सवाल (Frequently Asked Questions)
+          Frequently Asked Questions (FAQ)
         </h3>
 
         <div className="space-y-3 text-xs">
           <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm space-y-1.5">
-            <p className="font-bold text-primary text-sm">प्र. मुझे पैसे कैसे मिलेंगे?</p>
+            <p className="font-bold text-primary text-sm">Q. How and when do I get paid?</p>
             <p className="text-gray-600 leading-relaxed">
-              आपकी कमाई सीधे आपकी UPI ID (PhonePe, Google Pay, Paytm या बैंक अकाउंट) पर ट्रांसफर की जाती है। न्यूनतम पेआउट सीमा मात्र ₹200 है।
+              Your earnings are transferred directly to your registered UPI ID (Google Pay, PhonePe, Paytm, or bank account). The minimum withdrawal threshold is only ₹200.
             </p>
           </div>
 
           <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm space-y-1.5">
-            <p className="font-bold text-primary text-sm">प्र. क्या मुझे कोई सामान खरीदना या स्टॉक रखना होगा?</p>
+            <p className="font-bold text-primary text-sm">Q. Do I need to buy products or keep stock?</p>
             <p className="text-gray-600 leading-relaxed">
-              बिल्कुल नहीं! यह 100% जीरो इन्वेंटरी और जीरो इन्वेस्टमेंट प्रोग्राम है। आपको सिर्फ लिंक शेयर करना है, पैकिंग और डिलीवरी मर्चेंट स्टोर (Amazon/Flipkart) द्वारा की जाती है।
+              Never! This is a 100% zero-inventory affiliate program. You only recommend and share links. Storage, shipping, payments, and returns are handled entirely by verified merchant stores (Amazon, Flipkart, Meesho).
             </p>
           </div>
 
           <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm space-y-1.5">
-            <p className="font-bold text-primary text-sm">प्र. अगर किसी ने लिंक पर आज क्लिक किया और 4 दिन बाद खरीदा तो?</p>
+            <p className="font-bold text-primary text-sm">Q. What if someone clicks today and buys a few days later?</p>
             <p className="text-gray-600 leading-relaxed">
-              AVNIVO में 30 दिनों की कुकी ट्रैकिंग (30-Day Cookie Window) होती है। इसका मतलब है कि अगर कोई आपके लिंक से वेबसाइट पर आया और अगले 30 दिनों के अंदर कोई भी प्रोडक्ट खरीदता है, तो उसका कमीशन आपको ही मिलेगा!
+              AVNIVO uses a 30-day cookie window. If a customer visits the platform via your referral link and completes a purchase within 30 days, the commission is automatically attributed to your account!
             </p>
           </div>
         </div>

@@ -265,7 +265,7 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
                   })
                 }
                 className="p-3.5 rounded-xl border border-gray-200 text-gray-600 hover:text-secondary hover:bg-surface hover:border-secondary/40 transition-colors flex items-center justify-center group"
-                title="दोस्तों को शेयर करें (Share with Friends)"
+                title="Share with Friends"
               >
                 <Share2 className="w-5 h-5 group-hover:scale-110 transition-transform" />
               </button>
@@ -284,7 +284,7 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
               className="w-full py-2.5 px-4 bg-surface hover:bg-blue-50/60 text-primary font-bold text-xs sm:text-sm rounded-xl border border-gray-200 hover:border-secondary/40 shadow-sm transition-all flex items-center justify-center gap-2 group"
             >
               <Share2 className="w-4 h-4 text-secondary group-hover:scale-110 transition-transform" />
-              <span>दोस्तों को शेयर करें (Share with Friends)</span>
+              <span>Share Deal with Friends</span>
             </button>
 
             {/* Share & Earn Card */}

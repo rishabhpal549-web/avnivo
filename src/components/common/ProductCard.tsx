@@ -190,7 +190,7 @@ export function ProductCard({ product, layout = "grid" }: ProductCardProps) {
               });
             }}
             className="p-1.5 rounded-lg bg-white/90 backdrop-blur-md shadow-sm border border-gray-200/80 text-gray-400 hover:text-secondary hover:bg-white transition-colors"
-            title="दोस्तों को शेयर करें"
+            title="Share with Friends"
           >
             <Share2 className="w-3.5 h-3.5" />
           </button>
