@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Download, X, Smartphone } from "lucide-react";
+import { Download, X } from "lucide-react";
 
 export function PwaInstallPrompt() {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
@@ -53,8 +53,12 @@ export function PwaInstallPrompt() {
       className="fixed bottom-4 left-4 right-4 md:left-auto md:right-6 md:w-96 z-50 bg-primary/95 backdrop-blur-md text-white p-4 rounded-2xl shadow-2xl border border-blue-500/30 flex items-center justify-between gap-3 animate-fade-in"
     >
       <div className="flex items-center gap-3 min-w-0">
-        <div className="w-10 h-10 rounded-xl bg-secondary flex items-center justify-center shrink-0 shadow-inner">
-          <Smartphone className="w-5 h-5 text-white" />
+        <div className="w-11 h-11 rounded-xl bg-white p-1 flex items-center justify-center shrink-0 shadow-md border border-white/20">
+          <img
+            src="/icons/icon-192x192.png"
+            alt="AVNIVO App"
+            className="w-full h-full object-contain"
+          />
         </div>
         <div className="min-w-0">
           <p className="text-xs font-bold text-white truncate">Install AVNIVO App</p>
