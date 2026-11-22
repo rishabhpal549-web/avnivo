@@ -17,6 +17,7 @@ import {
   ShoppingBag,
   Truck,
   RotateCcw,
+  Gift,
 } from "lucide-react";
 import { formatINR, formatTimeAgo } from "@/lib/utils";
 import { MerchantComparisonTable } from "@/components/common/MerchantComparisonTable";
@@ -42,7 +43,18 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
 
   const handleCopyLink = () => {
     if (typeof window !== "undefined") {
-      navigator.clipboard.writeText(window.location.href);
+      let shareUrl = window.location.href;
+      try {
+        const partner = localStorage.getItem("avnivo_partner_account");
+        if (partner) {
+          const parsed = JSON.parse(partner);
+          if (parsed.affiliateCode) {
+            const sep = shareUrl.includes("?") ? "&" : "?";
+            shareUrl = `${shareUrl}${sep}ref=${parsed.affiliateCode}`;
+          }
+        }
+      } catch (e) {}
+      navigator.clipboard.writeText(shareUrl);
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     }
@@ -249,6 +261,26 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
               >
                 {copied ? <Check className="w-5 h-5 text-green-600" /> : <Share2 className="w-5 h-5" />}
               </button>
+            </div>
+
+            {/* Share & Earn Card */}
+            <div className="bg-gradient-to-r from-amber-50 to-orange-50 border border-orange-200/80 rounded-2xl p-3.5 flex items-center justify-between gap-3 text-xs">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-8 h-8 rounded-xl bg-orange-500/10 text-secondary flex items-center justify-center shrink-0">
+                  <Gift className="w-4 h-4 text-orange-600" />
+                </div>
+                <div className="min-w-0">
+                  <p className="font-bold text-gray-900 truncate">Earn up to 10% Commission</p>
+                  <p className="text-[11px] text-gray-500 truncate">Share this product &amp; get direct UPI payout</p>
+                </div>
+              </div>
+              <Link
+                href="/affiliate-program"
+                className="px-3 py-1.5 bg-secondary hover:bg-secondary-dark text-white font-bold text-[11px] rounded-xl shrink-0 shadow-sm transition-colors flex items-center gap-1"
+              >
+                <span>Partner Hub</span>
+                <ChevronRight className="w-3 h-3" />
+              </Link>
             </div>
 
             {/* Clear Affiliate Redirection Notice */}

@@ -155,6 +155,14 @@ export function Header() {
               </button>
             </div>
 
+            <Link
+              href="/affiliate-program"
+              className="inline-flex items-center gap-1 font-bold text-accent hover:text-white transition-colors bg-white/10 px-2 py-0.5 rounded-md text-[11px]"
+            >
+              <Sparkles className="w-3 h-3 text-accent" />
+              <span>🎁 Earn with Us</span>
+            </Link>
+
             <Link href="/affiliate-disclosure" className="hidden md:inline hover:text-white transition-colors">
               Affiliate Transparency
             </Link>
@@ -483,6 +491,15 @@ export function Header() {
           </div>
 
           <div className="pt-3 border-t border-gray-100 flex flex-col gap-2">
+            <Link
+              href="/affiliate-program"
+              onClick={() => setMobileMenuOpen(false)}
+              className="py-2 px-3 text-xs font-bold bg-orange-50 text-secondary rounded-xl flex items-center gap-2"
+            >
+              <Sparkles className="w-4 h-4 text-orange-500" />
+              <span>🎁 Affiliate &amp; Partner Program (कमाई करें)</span>
+            </Link>
+
             <Link
               href="/deals"
               onClick={() => setMobileMenuOpen(false)}

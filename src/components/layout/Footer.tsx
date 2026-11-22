@@ -120,6 +120,11 @@ export function Footer() {
           </h4>
           <ul className="space-y-2">
             <li>
+              <Link href="/affiliate-program" className="hover:text-accent transition-colors text-amber-300 font-bold flex items-center gap-1">
+                <span>🎁 Earn with AVNIVO (Partner Program)</span>
+              </Link>
+            </li>
+            <li>
               <Link href="/shop" className="hover:text-white transition-colors">
                 Browse All Products
               </Link>
