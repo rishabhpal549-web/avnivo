@@ -370,11 +370,21 @@ export async function GET(req: NextRequest) {
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
         "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlicnpmaXdza2ZobGtmZGpieWZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTUyNjY1NjcsImV4cCI6MjExMDg0MjU2N30.XQALfrWAZbazKNZJpbxXAYr9DBr7IUURKE45jjsfF3o";
 
-      let endpoint = `${supabaseUrl}/rest/v1/Product?select=id,name,slug,description,shortDescription,indicativePrice,originalPrice,discountPercent,rating,reviewCount,isVerifiedRating,images,keyFeatures,specifications,isFeatured,isTrending,isBestDeal,isTopPick,availability,priceLastUpdated,brand:Brand(name),category:Category(name,nameHindi,slug),merchantOffers:MerchantOffer(id,merchantId,indicativePrice,originalPrice,discountPercent,availability,deliveryInfo,lastVerifiedAt,merchant:Merchant(id,name,slug,logoUrl))`;
+      let endpoint = `${supabaseUrl}/rest/v1/Product?select=id,name,slug,description,shortDescription,indicativePrice,originalPrice,discountPercent,rating,reviewCount,isVerifiedRating,images,keyFeatures,specifications,isFeatured,isTrending,isBestDeal,isTopPick,availability,priceLastUpdated,brand:Brand(name),category:Category!inner(name,nameHindi,slug),merchantOffers:MerchantOffer(id,merchantId,indicativePrice,originalPrice,discountPercent,availability,deliveryInfo,lastVerifiedAt,merchant:Merchant(id,name,slug,logoUrl))&availability=neq.UNPUBLISHED`;
 
       if (rawQuery) {
         endpoint += `&name=ilike.*${encodeURIComponent(rawQuery)}*`;
       }
+      if (categorySlug) {
+        endpoint += `&category.slug=eq.${encodeURIComponent(categorySlug)}`;
+      }
+      if (isFeatured) endpoint += `&isFeatured=eq.true`;
+      if (isTrending) endpoint += `&isTrending=eq.true`;
+      if (isBestDeal) endpoint += `&isBestDeal=eq.true`;
+      if (isTopPick) endpoint += `&isTopPick=eq.true`;
+      if (minPrice !== undefined) endpoint += `&indicativePrice=gte.${minPrice}`;
+      if (maxPrice !== undefined) endpoint += `&indicativePrice=lte.${maxPrice}`;
+
       endpoint += `&order=indicativePrice.asc&limit=${limit}&offset=${skip}`;
 
       const res = await fetch(endpoint, {

@@ -8,23 +8,43 @@ export async function GET() {
     return NextResponse.json({ user: null });
   }
 
-  const user = await prisma.user.findUnique({
-    where: { id: currentUser.userId },
-    select: {
-      id: true,
-      name: true,
-      email: true,
-      mobile: true,
-      role: true,
-      avatarUrl: true,
-      createdAt: true,
-      _count: {
-        select: {
-          wishlist: true,
+  try {
+    const user = await prisma.user.findUnique({
+      where: { id: currentUser.userId },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        mobile: true,
+        role: true,
+        avatarUrl: true,
+        createdAt: true,
+        _count: {
+          select: {
+            wishlist: true,
+          },
         },
       },
+    });
+
+    if (user) {
+      return NextResponse.json({ user });
+    }
+  } catch (err: any) {
+    console.warn("User fetch error:", err.message);
+  }
+
+  // Graceful fallback from verified JWT payload
+  return NextResponse.json({
+    user: {
+      id: currentUser.userId,
+      name: currentUser.name,
+      email: currentUser.email,
+      role: currentUser.role,
+      mobile: null,
+      avatarUrl: null,
+      createdAt: new Date().toISOString(),
+      _count: { wishlist: 0 },
     },
   });
-
-  return NextResponse.json({ user });
 }

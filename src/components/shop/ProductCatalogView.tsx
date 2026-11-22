@@ -490,15 +490,19 @@ export function ProductCatalogView({
                 </p>
                 <div className="flex flex-wrap justify-center gap-2 max-w-lg mx-auto">
                   {[
-                    "Samsung Galaxy",
-                    "iPhone 15",
-                    "OnePlus",
-                    "Sony Headphones",
-                    "Noise Smartwatch",
-                    "boAt Earbuds",
-                    "Nike Shoes",
-                    "Air Fryer",
-                    "Pressure Cooker",
+                    "Vegetable Slicer",
+                    "Silicone Lids",
+                    "Motion Sensor Light",
+                    "Phone Stand",
+                    "Type-C Cable",
+                    "Resistance Bands",
+                    "RFID Card Wallet",
+                    "Sunglasses",
+                    "Jade Roller",
+                    "LCD Tablet",
+                    "Travel Neck Pillow",
+                    "Multi-Tool",
+                    "COB Keychain Light",
                   ].map((chip) => (
                     <button
                       key={chip}
@@ -523,8 +527,8 @@ export function ProductCatalogView({
             <div
               className={
                 layout === "grid"
-                  ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"
-                  : "space-y-4"
+                  ? "grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2.5 sm:gap-3.5"
+                  : "space-y-3"
               }
             >
               {products.map((prod) => (

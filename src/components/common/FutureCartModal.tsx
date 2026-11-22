@@ -36,7 +36,7 @@ export function FutureCartModal({ isOpen, onClose }: FutureCartModalProps) {
 
         <div className="space-y-4 text-sm text-gray-600 leading-relaxed">
           <p>
-            AVNIVO currently operates as a <strong>product discovery & price comparison destination</strong>. When you click <em>View Deal</em> or <em>Buy Now</em>, you are redirected directly to our verified partner merchants (such as Amazon India, Flipkart, and Croma) to complete your checkout securely.
+            AVNIVO currently operates as an <strong>affiliate shopping & product discovery platform</strong>. When you click <em>Buy Now</em> or <em>View Deal</em>, you are redirected directly to our verified partner merchants (such as Amazon India, Flipkart, and Meesho) to complete your purchase securely. All payments, deliveries, shipping, and customer support are handled by the partner merchant.
           </p>
 
           <div className="bg-surface p-4 rounded-xl border border-gray-200/80 space-y-2">

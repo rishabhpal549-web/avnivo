@@ -14,6 +14,9 @@ import {
   ExternalLink,
   ChevronRight,
   Info,
+  ShoppingBag,
+  Truck,
+  RotateCcw,
 } from "lucide-react";
 import { formatINR, formatTimeAgo } from "@/lib/utils";
 import { MerchantComparisonTable } from "@/components/common/MerchantComparisonTable";
@@ -24,9 +27,10 @@ import { useCompare } from "@/components/common/CompareContext";
 
 interface ProductDetailClientProps {
   product: any;
+  relatedProducts?: any[];
 }
 
-export function ProductDetailClient({ product }: ProductDetailClientProps) {
+export function ProductDetailClient({ product, relatedProducts = [] }: ProductDetailClientProps) {
   const [selectedImage, setSelectedImage] = useState(product.images?.[0] || "");
   const [copied, setCopied] = useState(false);
 
@@ -47,9 +51,9 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
   const lowestOffer = product.offers?.[0] || null;
 
   return (
-    <div className="max-w-7xl mx-auto px-4 sm:px-6 py-8">
+    <div className="max-w-7xl mx-auto px-3 sm:px-6 py-6 sm:py-8">
       {/* 1. Breadcrumbs */}
-      <nav className="flex items-center gap-1.5 text-xs text-gray-400 mb-6 flex-wrap">
+      <nav className="flex items-center gap-1.5 text-xs text-gray-400 mb-4 sm:mb-6 flex-wrap">
         <Link href="/" className="hover:text-primary">
           Home
         </Link>
@@ -76,11 +80,11 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
       </nav>
 
       {/* 2. Top Section: Gallery + Key Info */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-sm mb-12">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-8 border border-gray-100 shadow-sm mb-10">
         {/* Left: Gallery */}
         <div className="lg:col-span-6 flex flex-col items-center">
           {/* Main Visual Display */}
-          <div className="w-full h-80 sm:h-96 bg-surface rounded-2xl p-6 flex items-center justify-center border border-gray-200/60 relative overflow-hidden">
+          <div className="w-full h-72 sm:h-96 bg-surface rounded-2xl p-4 sm:p-6 flex items-center justify-center border border-gray-200/60 relative overflow-hidden">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={selectedImage}
@@ -88,7 +92,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
               className="max-h-full max-w-full object-contain transition-all duration-300"
             />
             {product.discountPercent > 0 && (
-              <span className="absolute top-4 left-4 bg-red-600 text-white text-xs font-black px-2.5 py-1 rounded-full shadow-sm">
+              <span className="absolute top-3 left-3 bg-red-600 text-white text-xs font-black px-2.5 py-1 rounded-full shadow-sm">
                 SAVE {product.discountPercent}%
               </span>
             )}
@@ -96,12 +100,12 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
 
           {/* Thumbnails */}
           {product.images && product.images.length > 1 && (
-            <div className="flex items-center gap-3 mt-4 overflow-x-auto py-1">
+            <div className="flex items-center gap-2.5 mt-3 overflow-x-auto py-1">
               {product.images.map((img: string, idx: number) => (
                 <button
                   key={idx}
                   onClick={() => setSelectedImage(img)}
-                  className={`w-16 h-16 rounded-xl bg-surface p-1.5 border transition-all shrink-0 ${
+                  className={`w-14 h-14 rounded-xl bg-surface p-1 border transition-all shrink-0 ${
                     selectedImage === img
                       ? "border-secondary ring-2 ring-secondary/20"
                       : "border-gray-200 hover:border-gray-300"
@@ -118,20 +122,20 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
         {/* Right: Key Details, Price, and Fast Action */}
         <div className="lg:col-span-6 flex flex-col justify-between">
           <div>
-            {/* Brand & Rating */}
+            {/* Category Tag & Rating */}
             <div className="flex items-center justify-between gap-2 mb-2">
               <span className="text-xs font-bold text-secondary uppercase tracking-widest">
-                {product.brandName || "AVNIVO Verified Platform"}
+                {product.categoryName || "Affiliate Deal"}
               </span>
 
               <div className="flex items-center gap-1.5 text-xs">
                 <div className="flex items-center gap-1 bg-amber-50 text-amber-800 px-2 py-0.5 rounded-lg border border-amber-200 font-bold">
                   <Star className="w-3.5 h-3.5 fill-amber-400 text-amber-400" />
-                  <span>{product.rating > 0 ? product.rating.toFixed(1) : "4.5"}</span>
+                  <span>{product.rating > 0 ? product.rating.toFixed(1) : "4.4"}</span>
                 </div>
                 {product.reviewCount > 0 && (
                   <span className="text-gray-400 text-[11px]">
-                    ({product.reviewCount.toLocaleString()} reviews)
+                    ({product.reviewCount.toLocaleString()} ratings)
                   </span>
                 )}
               </div>
@@ -148,36 +152,36 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
             )}
 
             {/* Price Box */}
-            <div className="bg-surface rounded-2xl p-4 border border-gray-200/80 mb-6">
+            <div className="bg-surface rounded-2xl p-4 border border-gray-200/80 mb-5">
               <div className="flex items-baseline gap-3">
-                <span className="text-3xl sm:text-4xl font-black text-primary font-display">
+                <span className="text-2xl sm:text-3xl font-black text-primary font-display">
                   {formatINR(product.indicativePrice)}
                 </span>
                 {product.originalPrice > product.indicativePrice && (
-                  <span className="text-base text-gray-400 line-through">
+                  <span className="text-sm sm:text-base text-gray-400 line-through">
                     {formatINR(product.originalPrice)}
                   </span>
                 )}
                 {product.discountPercent > 0 && (
-                  <span className="text-sm font-bold text-green-700 bg-green-100 px-2 py-0.5 rounded-md">
+                  <span className="text-xs sm:text-sm font-bold text-green-700 bg-green-100 px-2 py-0.5 rounded-md">
                     {product.discountPercent}% OFF
                   </span>
                 )}
               </div>
 
-              <div className="flex items-center gap-2 text-[11px] text-gray-500 mt-2">
+              <div className="flex items-center gap-2 text-[11px] text-gray-500 mt-1.5">
                 <Clock className="w-3.5 h-3.5 text-gray-400" />
-                <span>Indicative price, verified {formatTimeAgo(product.priceLastUpdated)}</span>
+                <span>Indicative merchant offer, verified recently</span>
               </div>
             </div>
 
             {/* Key Feature Bullets */}
             {product.keyFeatures && product.keyFeatures.length > 0 && (
-              <div className="mb-6 space-y-2">
+              <div className="mb-5 space-y-2">
                 <h4 className="text-xs font-bold text-primary uppercase tracking-wider">
-                  Key Highlights
+                  Product Highlights
                 </h4>
-                <ul className="space-y-1.5 text-xs text-gray-600">
+                <ul className="space-y-1 text-xs text-gray-600">
                   {product.keyFeatures.map((feat: string, idx: number) => (
                     <li key={idx} className="flex items-start gap-2">
                       <span className="w-1.5 h-1.5 rounded-full bg-secondary mt-1.5 shrink-0" />
@@ -189,24 +193,25 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
             )}
           </div>
 
-          {/* Action Row: Wishlist, Compare, Direct Buy */}
-          <div className="pt-6 border-t border-gray-100 space-y-4">
+          {/* Action Row: Wishlist, Compare, Direct Buy Now */}
+          <div className="pt-5 border-t border-gray-100 space-y-3">
             <div className="flex flex-wrap items-center gap-3">
               {lowestOffer && (
                 <a
                   href={lowestOffer.affiliateUrl}
                   target="_blank"
                   rel="nofollow noopener noreferrer"
-                  className="flex-1 inline-flex items-center justify-center gap-2 bg-secondary hover:bg-secondary-dark text-white font-bold py-3.5 px-6 rounded-2xl shadow-lg transition-all group text-sm"
+                  className="flex-1 inline-flex items-center justify-center gap-2 bg-secondary hover:bg-secondary-dark text-white font-bold py-3.5 px-6 rounded-xl shadow-lg transition-all group text-sm"
                 >
-                  <span>Buy on {lowestOffer.merchantName} ({formatINR(lowestOffer.indicativePrice)})</span>
+                  <ShoppingBag className="w-4 h-4" />
+                  <span>Buy Now on {lowestOffer.merchantName} ({formatINR(lowestOffer.indicativePrice)})</span>
                   <ExternalLink className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                 </a>
               )}
 
               <button
                 onClick={() => toggleWishlist(product.id)}
-                className={`p-3.5 rounded-2xl border transition-colors flex items-center justify-center ${
+                className={`p-3.5 rounded-xl border transition-colors flex items-center justify-center ${
                   inWish
                     ? "bg-red-50 text-red-600 border-red-200"
                     : "border-gray-200 text-gray-600 hover:text-red-500 hover:bg-surface"
@@ -227,7 +232,7 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
                     categorySlug: product.categorySlug,
                   })
                 }
-                className={`p-3.5 rounded-2xl border transition-colors flex items-center justify-center ${
+                className={`p-3.5 rounded-xl border transition-colors flex items-center justify-center ${
                   inComp
                     ? "bg-blue-50 text-secondary border-blue-200"
                     : "border-gray-200 text-gray-600 hover:text-secondary hover:bg-surface"
@@ -239,77 +244,77 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
 
               <button
                 onClick={handleCopyLink}
-                className="p-3.5 rounded-2xl border border-gray-200 text-gray-600 hover:text-primary hover:bg-surface transition-colors flex items-center justify-center"
+                className="p-3.5 rounded-xl border border-gray-200 text-gray-600 hover:text-primary hover:bg-surface transition-colors flex items-center justify-center"
                 title="Share product link"
               >
                 {copied ? <Check className="w-5 h-5 text-green-600" /> : <Share2 className="w-5 h-5" />}
               </button>
             </div>
 
-            <p className="text-[11px] text-gray-400 text-center">
-              * AVNIVO redirects you directly to the verified merchant. No checkout fees or hidden markups.
-            </p>
+            {/* Clear Affiliate Redirection Notice */}
+            <div className="bg-blue-50/80 border border-blue-100 rounded-xl p-3 flex items-start gap-2.5 text-[11px] text-blue-900 leading-relaxed">
+              <Info className="w-4 h-4 text-secondary shrink-0 mt-0.5" />
+              <span>
+                <strong>Affiliate Shopping Notice:</strong> Clicking <em>Buy Now</em> opens the merchant&apos;s genuine store page ({lowestOffer?.merchantName || "Amazon / Flipkart / Meesho"}). All transactions, payments, deliveries, and returns are handled directly by the merchant.
+              </span>
+            </div>
           </div>
         </div>
       </div>
 
-      {/* 3. Verified Merchant Price Comparison Table */}
-      <section className="mb-14">
-        <MerchantComparisonTable
-          offers={product.offers}
-          productName={product.name}
-        />
-      </section>
+      {/* 3. Multi-Merchant Comparison Table */}
+      {product.offers && product.offers.length > 0 && (
+        <div className="mb-12">
+          <MerchantComparisonTable offers={product.offers} productName={product.name} />
+        </div>
+      )}
 
-      {/* 4. Specifications & Description Matrix */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-14">
-        {/* Full Specifications */}
-        <div className="lg:col-span-8 bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-sm">
-          <h3 className="text-lg font-bold text-primary font-display mb-4">
-            Technical Specifications
-          </h3>
-
-          {product.specifications && Object.keys(product.specifications).length > 0 ? (
-            <div className="divide-y divide-gray-100 border-t border-b border-gray-100 text-xs">
-              {Object.entries(product.specifications).map(([key, val]: [string, any]) => (
-                <div key={key} className="py-3 grid grid-cols-3 gap-4">
-                  <span className="font-bold text-gray-500">{key}</span>
-                  <span className="col-span-2 text-charcoal font-medium">{String(val)}</span>
-                </div>
-              ))}
-            </div>
-          ) : (
-            <p className="text-xs text-gray-400">Specifications not available for this item.</p>
-          )}
-
-          {/* Detailed Description */}
-          <div className="mt-8 pt-6 border-t border-gray-100">
-            <h4 className="text-sm font-bold text-primary font-display mb-2">
-              Product Overview
-            </h4>
-            <div className="text-xs sm:text-sm text-gray-600 leading-relaxed whitespace-pre-line">
+      {/* 4. Full Specifications & Description */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 mb-12">
+        <div className="lg:col-span-8 bg-white rounded-3xl p-6 sm:p-8 border border-gray-100 shadow-sm space-y-6">
+          <div>
+            <h3 className="text-lg font-bold text-primary font-display mb-3">
+              Product Overview & Practical Uses
+            </h3>
+            <p className="text-xs sm:text-sm text-gray-600 leading-relaxed whitespace-pre-line">
               {product.description}
-            </div>
+            </p>
           </div>
+
+          {product.specifications && Object.keys(product.specifications).length > 0 && (
+            <div>
+              <h4 className="text-sm font-bold text-primary font-display mb-3">
+                Technical Specifications
+              </h4>
+              <div className="border border-gray-100 rounded-2xl overflow-hidden divide-y divide-gray-100">
+                {Object.entries(product.specifications).map(([key, val]: any, i) => (
+                  <div key={i} className="grid grid-cols-3 p-3 text-xs">
+                    <span className="font-semibold text-gray-500">{key}</span>
+                    <span className="col-span-2 text-charcoal font-medium">{val}</span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Right: Consumer Trust & Support */}
-        <div className="lg:col-span-4 space-y-6">
-          <div className="bg-surface rounded-3xl p-6 border border-gray-200/80">
-            <h4 className="font-bold text-sm text-primary font-display mb-3">
+        {/* Right Info Sidebar */}
+        <div className="lg:col-span-4 space-y-4">
+          <div className="bg-white rounded-3xl p-6 border border-gray-100 shadow-sm space-y-4">
+            <h4 className="text-sm font-bold text-primary font-display">
               AVNIVO Shopping Guarantee
             </h4>
             <div className="space-y-3 text-xs text-gray-600">
               <div className="flex items-start gap-2.5">
                 <ShieldCheck className="w-4 h-4 text-green-600 shrink-0 mt-0.5" />
                 <span>
-                  <strong>100% Genuine Retailers:</strong> All links lead to authorized stores with standard manufacturer warranties.
+                  <strong>100% Genuine Retailers:</strong> All links lead to authorized stores (Amazon, Flipkart, Meesho) with standard merchant customer service.
                 </span>
               </div>
               <div className="flex items-start gap-2.5">
-                <ShieldCheck className="w-4 h-4 text-green-600 shrink-0 mt-0.5" />
+                <RotateCcw className="w-4 h-4 text-green-600 shrink-0 mt-0.5" />
                 <span>
-                  <strong>Merchant Return Policies:</strong> Purchases are covered by the merchant&apos;s return and refund timelines (e.g., 7-day or 10-day replacement on Amazon).
+                  <strong>Merchant Return Policies:</strong> Purchases are covered by the merchant&apos;s standard return and replacement policies.
                 </span>
               </div>
             </div>
@@ -319,30 +324,15 @@ export function ProductDetailClient({ product }: ProductDetailClientProps) {
         </div>
       </div>
 
-      {/* 5. Similar & Related Products */}
-      {product.relatedProducts && product.relatedProducts.length > 0 && (
-        <section className="my-14">
-          <h2 className="text-2xl font-bold text-primary font-display mb-6">
-            Similar Products in {product.categoryName}
+      {/* 5. Similar & Related Products (Compact Grid) */}
+      {relatedProducts && relatedProducts.length > 0 && (
+        <section className="my-10">
+          <h2 className="text-xl sm:text-2xl font-bold text-primary font-display mb-5">
+            Similar Affordable Products in {product.categoryName}
           </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-            {product.relatedProducts.map((rp: any) => (
-              <ProductCard
-                key={rp.id}
-                product={{
-                  id: rp.id,
-                  name: rp.name,
-                  slug: rp.slug,
-                  brandName: rp.brandName,
-                  images: [rp.image],
-                  indicativePrice: rp.indicativePrice,
-                  originalPrice: rp.originalPrice,
-                  discountPercent: rp.discountPercent,
-                  rating: rp.rating,
-                  reviewCount: rp.reviewCount,
-                  offers: [{ merchantName: rp.lowestMerchant }],
-                }}
-              />
+          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-2.5 sm:gap-3.5">
+            {relatedProducts.map((rp: any) => (
+              <ProductCard key={rp.id} product={rp} />
             ))}
           </div>
         </section>
