@@ -1,7 +1,11 @@
 import { MetadataRoute } from "next";
 
 export default function robots(): MetadataRoute.Robots {
-  const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://avnivo.com";
+  const envUrl = process.env.NEXT_PUBLIC_APP_URL;
+  const baseUrl =
+    envUrl && !envUrl.includes("localhost")
+      ? envUrl
+      : "https://avnivo.vercel.app";
 
   return {
     rules: [
@@ -14,3 +18,4 @@ export default function robots(): MetadataRoute.Robots {
     sitemap: `${baseUrl}/sitemap.xml`,
   };
 }
+
