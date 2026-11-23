@@ -12,7 +12,7 @@ export async function GET(req: NextRequest) {
     const productId = searchParams.get("productId");
 
     if (!offerId && !productId) {
-      return NextResponse.redirect(new URL("/", req.url));
+      return NextResponse.redirect(new URL("/shop?notice=invalid_offer", req.url));
     }
 
     let targetOffer = null;
@@ -29,8 +29,11 @@ export async function GET(req: NextRequest) {
       });
     }
 
-    if (!targetOffer || !targetOffer.affiliateUrl) {
-      return NextResponse.redirect(new URL("/shop", req.url));
+    if (!targetOffer || !targetOffer.affiliateUrl || targetOffer.affiliateUrl === "#") {
+      const fallbackPath = targetOffer?.product?.slug
+        ? `/product/${targetOffer.product.slug}?notice=merchant_url_pending`
+        : "/shop?notice=merchant_url_pending";
+      return NextResponse.redirect(new URL(fallbackPath, req.url));
     }
 
     // Hash client IP for privacy compliance (GDPR/DPDP Act 2023)
@@ -77,6 +80,6 @@ export async function GET(req: NextRequest) {
     return NextResponse.redirect(new URL(`/out/${targetOffer.id}`, req.url));
   } catch (err: any) {
     console.error("Affiliate redirect error:", err);
-    return NextResponse.redirect(new URL("/", req.url));
+    return NextResponse.redirect(new URL("/shop?notice=redirect_error", req.url));
   }
 }

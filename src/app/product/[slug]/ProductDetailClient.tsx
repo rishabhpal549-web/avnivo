@@ -182,9 +182,14 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
                 )}
               </div>
 
-              <div className="flex items-center gap-2 text-[11px] text-gray-500 mt-1.5">
-                <Clock className="w-3.5 h-3.5 text-gray-400" />
-                <span>Indicative merchant offer, verified recently</span>
+              <div className="flex items-center justify-between flex-wrap gap-2 text-[11px] text-gray-500 mt-2 pt-2 border-t border-gray-200/60">
+                <span className="flex items-center gap-1.5">
+                  <Clock className="w-3.5 h-3.5 text-gray-400" />
+                  <span>Price Last Verified: <strong className="text-charcoal">{new Date(product.priceLastUpdated || Date.now()).toLocaleDateString("en-IN", { dateStyle: "medium" })}</strong></span>
+                </span>
+                <span className="text-[10px] text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded font-bold border border-emerald-200">
+                  Direct Merchant Link
+                </span>
               </div>
             </div>
 
@@ -209,7 +214,7 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
           {/* Action Row: Wishlist, Compare, Direct Buy Now */}
           <div className="pt-5 border-t border-gray-100 space-y-3">
             <div className="flex flex-wrap items-center gap-3">
-              {lowestOffer && (
+              {lowestOffer && lowestOffer.affiliateUrl && lowestOffer.affiliateUrl !== "#" ? (
                 <a
                   href={lowestOffer.affiliateUrl}
                   target="_blank"
@@ -220,6 +225,11 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
                   <span>Buy Now on {lowestOffer.merchantName} ({formatINR(lowestOffer.indicativePrice)})</span>
                   <ExternalLink className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
                 </a>
+              ) : (
+                <div className="flex-1 inline-flex items-center justify-center gap-2 bg-gray-100 border border-gray-300 text-gray-500 font-bold py-3.5 px-6 rounded-xl text-xs sm:text-sm">
+                  <ShoppingBag className="w-4 h-4 text-gray-400" />
+                  <span>Checking Merchant Availability</span>
+                </div>
               )}
 
               <button
