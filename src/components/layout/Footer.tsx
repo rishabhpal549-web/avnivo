@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { AvnivoLogo } from "../common/AvnivoLogo";
-import { ShieldCheck, Mail, ArrowRight, ExternalLink, Heart, Youtube, Linkedin } from "lucide-react";
+import { ShieldCheck, Mail, ArrowRight, ExternalLink, Heart, Youtube, Linkedin, Instagram, Send } from "lucide-react";
 
 export function Footer() {
   const [email, setEmail] = useState("");
@@ -93,6 +93,24 @@ export function Footer() {
             >
               <span className="w-4 h-4 rounded-full bg-rose-600 text-white flex items-center justify-center text-[10px] font-black">P</span>
               <span>Pinterest</span>
+            </a>
+            <a
+              href="https://www.instagram.com/avnivoofficialindia"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-pink-600/20 hover:bg-pink-600/30 text-pink-300 border border-pink-500/30 rounded-xl text-xs font-bold transition-all"
+            >
+              <Instagram className="w-4 h-4 text-pink-400" />
+              <span>Instagram</span>
+            </a>
+            <a
+              href="https://t.me/avnivoofficialindia"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-sky-600/20 hover:bg-sky-600/30 text-sky-300 border border-sky-500/30 rounded-xl text-xs font-bold transition-all"
+            >
+              <Send className="w-4 h-4 text-sky-400" />
+              <span>Telegram Deals</span>
             </a>
           </div>
         </div>
