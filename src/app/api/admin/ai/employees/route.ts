@@ -4,7 +4,7 @@ import { getCurrentUser } from "@/lib/auth";
 
 export const dynamic = "force-dynamic";
 
-export const DEFAULT_AI_EMPLOYEES = [
+const DEFAULT_AI_EMPLOYEES = [
   {
     code: "MANAGER",
     name: "AI Chief Manager",
