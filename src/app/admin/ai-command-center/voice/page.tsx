@@ -33,44 +33,92 @@ export default function VoiceAssistantLaboratoryPage() {
     { text: "Sab AI workers ko pause karo, emergency lockdown lagao", lang: "Hindi", action: "EMERGENCY_LOCKDOWN" },
   ];
 
-  const handleStartListening = () => {
+  const recognitionRef = React.useRef<any>(null);
+
+  const handleStartListening = async () => {
     if (typeof window === "undefined") return;
+
+    if (isListening && recognitionRef.current) {
+      try {
+        recognitionRef.current.stop();
+      } catch (e) {}
+      setIsListening(false);
+      return;
+    }
 
     const SpeechRecognition =
       (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
 
     if (!SpeechRecognition) {
-      alert("Your browser does not support Web Speech API. Please use Google Chrome or Microsoft Edge.");
+      alert("आपके ब्राउज़र में आवाज़ पहचान (Web Speech API) उपलब्ध नहीं है। कृपया Google Chrome या Microsoft Edge का उपयोग करें।");
       return;
     }
 
-    const recognition = new SpeechRecognition();
-    recognition.lang = "hi-IN"; // Handles Hindi and Indian English seamlessly
-    recognition.interimResults = false;
+    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        stream.getTracks().forEach((track) => track.stop());
+      } catch (permErr: any) {
+        if (permErr.name === "NotAllowedError" || permErr.name === "PermissionDeniedError") {
+          alert("⚠️ माइक्रोफ़ोन की अनुमति (Permission) ब्लॉक है!\n\nकृपया एड्रेस बार में 🔒 लॉक या माइक आइकन पर क्लिक करके Microphone को 'Allow' (अनुमति दें) करें।");
+          return;
+        }
+      }
+    }
 
-    recognition.onstart = () => {
-      setIsListening(true);
-      setTranscript("");
-      setAiResponse(null);
-      setRecognizedAction(null);
-    };
+    try {
+      const recognition = new SpeechRecognition();
+      recognitionRef.current = recognition;
+      recognition.lang = "hi-IN";
+      recognition.interimResults = true;
+      recognition.continuous = false;
+      recognition.maxAlternatives = 1;
 
-    recognition.onresult = async (event: any) => {
-      const speechText = event.results[0][0].transcript;
-      setTranscript(speechText);
+      recognition.onstart = () => {
+        setIsListening(true);
+        setTranscript("");
+        setAiResponse("🎙️ माइक चालू है... बोलिए (Listening)");
+        setRecognizedAction(null);
+      };
+
+      recognition.onresult = async (event: any) => {
+        let currentTranscript = "";
+        for (let i = event.resultIndex; i < event.results.length; i++) {
+          currentTranscript += event.results[i][0].transcript;
+        }
+        setTranscript(currentTranscript);
+
+        const isFinal = event.results[event.results.length - 1].isFinal;
+        if (isFinal && currentTranscript.trim()) {
+          setIsListening(false);
+          processCommand(currentTranscript);
+        }
+      };
+
+      recognition.onerror = (event: any) => {
+        console.error("Speech error:", event.error);
+        setIsListening(false);
+        if (event.error === "not-allowed") {
+          alert("⚠️ ब्राउज़र ने माइक एक्सेस ब्लॉक कर दिया है!\n\nकृपया एड्रेस बार में 🔒 लॉक पर क्लिक करके Microphone को 'Allow' करें।");
+        } else if (event.error === "no-speech") {
+          setAiResponse("माइक में कोई आवाज़ सुनाई नहीं दी। कृपया थोड़ा तेज़ बोलें।");
+        } else if (event.error === "audio-capture") {
+          alert("⚠️ कोई माइक्रोफ़ोन नहीं मिला। कृपया अपना हेडफ़ोन या माइक चेक करें।");
+        } else {
+          setAiResponse(`माइक रुका (${event.error})।`);
+        }
+      };
+
+      recognition.onend = () => {
+        setIsListening(false);
+      };
+
+      recognition.start();
+    } catch (err: any) {
+      console.error("Speech start error:", err);
       setIsListening(false);
-      processCommand(speechText);
-    };
-
-    recognition.onerror = () => {
-      setIsListening(false);
-    };
-
-    recognition.onend = () => {
-      setIsListening(false);
-    };
-
-    recognition.start();
+      alert("माइक शुरू करने में समस्या आई: " + err.message);
+    }
   };
 
   const processCommand = async (text: string) => {
