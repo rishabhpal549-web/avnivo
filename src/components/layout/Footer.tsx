@@ -3,7 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { AvnivoLogo } from "../common/AvnivoLogo";
-import { ShieldCheck, Mail, ArrowRight, ExternalLink, Heart, Youtube } from "lucide-react";
+import { ShieldCheck, Mail, ArrowRight, ExternalLink, Heart, Youtube, Linkedin } from "lucide-react";
 
 export function Footer() {
   const [email, setEmail] = useState("");
@@ -66,7 +66,7 @@ export function Footer() {
           <p className="text-gray-400 leading-relaxed text-xs max-w-sm">
             AVNIVO is India&apos;s next-generation e-commerce discovery and price comparison engine. We empower consumers to discover, compare, and shop authentic products at the lowest verified prices across authorized retailers.
           </p>
-          <div className="flex items-center gap-3 pt-2">
+          <div className="flex items-center gap-3 pt-2 flex-wrap">
             <a
               href="https://www.youtube.com/@AVNIVOOfficialindia"
               target="_blank"
@@ -75,6 +75,15 @@ export function Footer() {
             >
               <Youtube className="w-4 h-4 text-red-500" />
               <span>@AVNIVOOfficialindia</span>
+            </a>
+            <a
+              href="https://www.linkedin.com/in/avnivo-india-3177a3451"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-600/20 hover:bg-blue-600/30 text-blue-300 border border-blue-500/30 rounded-xl text-xs font-bold transition-all"
+            >
+              <Linkedin className="w-4 h-4 text-blue-400" />
+              <span>AVNIVO India</span>
             </a>
           </div>
         </div>
