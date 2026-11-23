@@ -75,6 +75,7 @@ export default function AdminProductsPage() {
   // Merchant Offers
   const [offers, setOffers] = useState<OfferFormData[]>([]);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [uploadError, setUploadError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
 
@@ -125,6 +126,7 @@ export default function AdminProductsPage() {
     setIsBestDeal(false);
     setIsTopPick(false);
     setFormError("");
+    setUploadError("");
 
     // Initialize default merchant offers for Amazon, Flipkart, Meesho
     const defaultOffers: OfferFormData[] = (merchants.length > 0 ? merchants : [
@@ -172,6 +174,7 @@ export default function AdminProductsPage() {
     setIsBestDeal(Boolean(p.isBestDeal));
     setIsTopPick(Boolean(p.isTopPick));
     setFormError("");
+    setUploadError("");
 
     // Map existing merchant offers
     const existingOffers: OfferFormData[] = (p.merchantOffers || []).map((o: any) => ({
@@ -206,6 +209,21 @@ export default function AdminProductsPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    setUploadError("");
+
+    // Client-side MIME validation
+    const validTypes = ["image/jpeg", "image/png", "image/webp", "image/jpg"];
+    if (!validTypes.includes(file.type.toLowerCase())) {
+      setUploadError("Only JPG, JPEG, PNG, and WEBP formats are supported.");
+      return;
+    }
+
+    // Client-side size validation (max 5 MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setUploadError(`File size (${(file.size / (1024 * 1024)).toFixed(1)} MB) exceeds the 5 MB limit.`);
+      return;
+    }
+
     setUploadingImage(true);
     try {
       const formData = new FormData();
@@ -219,13 +237,17 @@ export default function AdminProductsPage() {
       const data = await res.json();
       if (res.ok && data.url) {
         setImageUrl(data.url);
+        setUploadError("");
       } else {
-        alert(data.error || "Failed to upload image.");
+        setUploadError(data.error || "Failed to upload image.");
       }
     } catch {
-      alert("Error uploading image.");
+      setUploadError("Network error while uploading image. Please try again.");
     } finally {
       setUploadingImage(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
     }
   };
 
@@ -650,14 +672,17 @@ export default function AdminProductsPage() {
                   <input
                     type="url"
                     value={imageUrl}
-                    onChange={(e) => setImageUrl(e.target.value)}
-                    placeholder="https://images.unsplash.com/... or upload below"
-                    className="flex-1 px-3.5 py-2 rounded-xl border border-gray-200 text-xs focus:border-secondary outline-none"
+                    onChange={(e) => {
+                      setImageUrl(e.target.value);
+                      if (uploadError) setUploadError("");
+                    }}
+                    placeholder="https://... or click Upload Image button"
+                    className="flex-1 px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:border-secondary outline-none"
                   />
                   <input
                     ref={fileInputRef}
                     type="file"
-                    accept="image/*"
+                    accept="image/jpeg,image/png,image/webp,image/jpg"
                     onChange={handleFileUpload}
                     className="hidden"
                   />
@@ -665,21 +690,51 @@ export default function AdminProductsPage() {
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
                     disabled={uploadingImage}
-                    className="inline-flex items-center gap-1.5 px-3 py-2 bg-surface hover:bg-gray-100 border border-gray-200 rounded-xl text-xs font-semibold text-charcoal transition-colors shrink-0"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-2.5 bg-secondary text-white hover:bg-secondary/90 rounded-xl text-xs font-semibold shadow-sm transition-all shrink-0 disabled:opacity-50"
                   >
-                    <Upload className="w-3.5 h-3.5 text-secondary" />
-                    <span>{uploadingImage ? "Uploading..." : "Upload File"}</span>
+                    <Upload className="w-3.5 h-3.5" />
+                    <span>{uploadingImage ? "Uploading..." : "Upload Image"}</span>
                   </button>
                 </div>
+
+                <div className="flex items-center justify-between mt-1 text-[11px] text-gray-400">
+                  <span>Supported: JPG, PNG, WEBP (Max 5MB)</span>
+                  {imageUrl && (
+                    <span className="text-green-600 font-medium flex items-center gap-1">
+                      <Check className="w-3 h-3" /> Image saved & ready
+                    </span>
+                  )}
+                </div>
+
+                {uploadError && (
+                  <div className="mt-2 p-2.5 bg-red-50 border border-red-200 rounded-xl text-xs text-red-600 flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 shrink-0" />
+                    <span>{uploadError}</span>
+                  </div>
+                )}
+
                 {imageUrl && (
-                  <div className="mt-2 flex items-center gap-2">
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
-                      src={imageUrl}
-                      alt="Preview"
-                      className="w-12 h-12 rounded-lg object-contain bg-surface border p-1"
-                    />
-                    <span className="text-[10px] text-gray-400 truncate max-w-sm">{imageUrl}</span>
+                  <div className="mt-2.5 p-2.5 bg-gray-50 border border-gray-200 rounded-xl flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={imageUrl}
+                        alt="Preview"
+                        className="w-12 h-12 rounded-lg object-contain bg-white border p-1 shrink-0"
+                      />
+                      <div className="min-w-0">
+                        <p className="text-[11px] font-bold text-gray-700 truncate">Image Preview</p>
+                        <p className="text-[10px] text-gray-400 truncate max-w-xs">{imageUrl}</p>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setImageUrl("")}
+                      className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors shrink-0"
+                      title="Remove image"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
                   </div>
                 )}
               </div>
