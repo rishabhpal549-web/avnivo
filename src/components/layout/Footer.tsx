@@ -85,6 +85,15 @@ export function Footer() {
               <Linkedin className="w-4 h-4 text-blue-400" />
               <span>AVNIVO India</span>
             </a>
+            <a
+              href="https://www.pinterest.com/avnivoofficialindia"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-rose-600/20 hover:bg-rose-600/30 text-rose-300 border border-rose-500/30 rounded-xl text-xs font-bold transition-all"
+            >
+              <span className="w-4 h-4 rounded-full bg-rose-600 text-white flex items-center justify-center text-[10px] font-black">P</span>
+              <span>Pinterest</span>
+            </a>
           </div>
         </div>
 
