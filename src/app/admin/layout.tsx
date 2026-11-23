@@ -16,6 +16,7 @@ import {
   Lock,
   KeyRound,
   CheckCircle2,
+  Share2,
 } from "lucide-react";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -176,6 +177,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   const navLinks = [
+    { name: "⚡ AI Command Center", href: "/admin/ai-command-center", icon: LayoutDashboard },
+    { name: "🛡️ Approvals", href: "/admin/ai-command-center/approvals", icon: CheckCircle2 },
+    { name: "📱 10 Social Channels", href: "/admin/ai-command-center/social", icon: Share2 },
+    { name: "🔒 Security Panel", href: "/admin/ai-command-center/security", icon: ShieldAlert },
     { name: "Overview & Analytics", href: "/admin", icon: LayoutDashboard },
     { name: "Products & Offers", href: "/admin/products", icon: Package },
     { name: "Homepage Banners", href: "/admin/banners", icon: ImageIcon },

@@ -279,3 +279,111 @@ model Seller {
   createdAt          DateTime @default(now())
   updatedAt          DateTime @updatedAt
 }
+
+// ==========================================
+// AVNIVO AI WORKFORCE & COMMAND CENTER MODELS
+// ==========================================
+
+model AiEmployee {
+  id             String      @id @default(cuid())
+  code           String      @unique
+  name           String
+  roleTitle      String
+  status         String      @default("ACTIVE") // ACTIVE, PAUSED, DISABLED, LOCKED
+  avatarUrl      String?
+  description    String?
+  tasksCompleted Int         @default(0)
+  lastActiveAt   DateTime    @default(now())
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+
+  tasks          AiTask[]
+  logs           AiTaskLog[]
+}
+
+model AiTask {
+  id               String          @id @default(cuid())
+  taskNumber       String          @unique
+  title            String
+  description      String
+  assignedTo       String
+  employee         AiEmployee      @relation(fields: [assignedTo], references: [code])
+  priority         String          @default("MEDIUM") // LOW, MEDIUM, HIGH, URGENT
+  status           String          @default("PENDING") // PENDING, IN_PROGRESS, AWAITING_APPROVAL, COMPLETED, REJECTED
+  inputData        String?
+  outputData       String?
+  approvalRequired Boolean         @default(true)
+  approvalStatus   String?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  logs             AiTaskLog[]
+  approvals        OwnerApproval[]
+}
+
+model AiTaskLog {
+  id           String      @id @default(cuid())
+  taskId       String
+  task         AiTask      @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  employeeCode String
+  employee     AiEmployee  @relation(fields: [employeeCode], references: [code])
+  step         String
+  message      String
+  logLevel     String      @default("INFO") // INFO, WARN, ERROR, SUCCESS
+  createdAt    DateTime    @default(now())
+}
+
+model OwnerApproval {
+  id             String    @id @default(cuid())
+  taskId         String?
+  task           AiTask?   @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  type           String    // SOCIAL_POST, AD_CAMPAIGN, FINANCIAL_ACTION, DATA_MODIFICATION, SYSTEM_CHANGE
+  title          String
+  summary        String
+  targetPlatform String?
+  contentPayload String
+  status         String    @default("PENDING") // PENDING, APPROVED, REJECTED, EDITED
+  ownerNotes     String?
+  decidedAt      DateTime?
+  createdAt      DateTime  @default(now())
+}
+
+model SocialChannelAccount {
+  id            String    @id @default(cuid())
+  platform      String    @unique // INSTAGRAM, FACEBOOK, YOUTUBE, X, LINKEDIN, PINTEREST, TELEGRAM
+  accountHandle String?
+  accountName   String?
+  profileUrl    String?
+  isConnected   Boolean   @default(false)
+  authStatus    String    @default("NOT_CONFIGURED") // NOT_CONFIGURED, CONNECTED, TOKEN_EXPIRED, ERROR
+  lastSyncAt    DateTime?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model SocialMediaPost {
+  id           String    @id @default(cuid())
+  platform     String    // INSTAGRAM, FACEBOOK, YOUTUBE, X, LINKEDIN, PINTEREST, TELEGRAM
+  caption      String
+  hashtags     String?
+  mediaUrl     String?
+  mediaType    String    @default("IMAGE") // IMAGE, VIDEO, TEXT
+  scheduledFor DateTime?
+  status       String    @default("DRAFT") // DRAFT, PENDING_APPROVAL, APPROVED, SCHEDULED, PUBLISHED, FAILED
+  approvalId   String?
+  publishedUrl String?
+  errorMessage String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model SecurityAuditRecord {
+  id                String   @id @default(cuid())
+  action            String
+  performedBy       String   // OWNER, AI_MANAGER, WORKER, SYSTEM
+  details           String
+  ipAddress         String?
+  isEmergencyAction Boolean  @default(false)
+  createdAt         DateTime @default(now())
+}
+
