@@ -54,30 +54,18 @@ export default function VoiceAssistantLaboratoryPage() {
       return;
     }
 
-    if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-        stream.getTracks().forEach((track) => track.stop());
-      } catch (permErr: any) {
-        if (permErr.name === "NotAllowedError" || permErr.name === "PermissionDeniedError") {
-          alert("⚠️ माइक्रोफ़ोन की अनुमति (Permission) ब्लॉक है!\n\nकृपया एड्रेस बार में 🔒 लॉक या माइक आइकन पर क्लिक करके Microphone को 'Allow' (अनुमति दें) करें।");
-          return;
-        }
-      }
-    }
-
     try {
       const recognition = new SpeechRecognition();
       recognitionRef.current = recognition;
       recognition.lang = "hi-IN";
       recognition.interimResults = true;
-      recognition.continuous = false;
+      recognition.continuous = true;
       recognition.maxAlternatives = 1;
 
       recognition.onstart = () => {
         setIsListening(true);
         setTranscript("");
-        setAiResponse("🎙️ माइक चालू है... बोलिए (Listening)");
+        setAiResponse("🎙️ माइक चालू है... बोलिए (Listening...)");
         setRecognizedAction(null);
       };
 
@@ -86,26 +74,30 @@ export default function VoiceAssistantLaboratoryPage() {
         for (let i = event.resultIndex; i < event.results.length; i++) {
           currentTranscript += event.results[i][0].transcript;
         }
-        setTranscript(currentTranscript);
+        if (currentTranscript.trim()) {
+          setTranscript(currentTranscript);
+        }
 
         const isFinal = event.results[event.results.length - 1].isFinal;
         if (isFinal && currentTranscript.trim()) {
+          try {
+            recognition.stop();
+          } catch (e) {}
           setIsListening(false);
           processCommand(currentTranscript);
         }
       };
 
       recognition.onerror = (event: any) => {
-        console.error("Speech error:", event.error);
-        setIsListening(false);
+        console.warn("Speech error notice:", event.error);
         if (event.error === "not-allowed") {
+          setIsListening(false);
           alert("⚠️ ब्राउज़र ने माइक एक्सेस ब्लॉक कर दिया है!\n\nकृपया एड्रेस बार में 🔒 लॉक पर क्लिक करके Microphone को 'Allow' करें।");
         } else if (event.error === "no-speech") {
-          setAiResponse("माइक में कोई आवाज़ सुनाई नहीं दी। कृपया थोड़ा तेज़ बोलें।");
+          setAiResponse("🎙️ आवाज़ सुनाई नहीं दी, कृपया थोड़ा तेज़ और साफ़ बोलें...");
         } else if (event.error === "audio-capture") {
+          setIsListening(false);
           alert("⚠️ कोई माइक्रोफ़ोन नहीं मिला। कृपया अपना हेडफ़ोन या माइक चेक करें।");
-        } else {
-          setAiResponse(`माइक रुका (${event.error})।`);
         }
       };
 

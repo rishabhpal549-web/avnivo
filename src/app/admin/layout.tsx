@@ -2,27 +2,84 @@
 
 import React, { useState } from "react";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import { useAuth } from "@/components/common/AuthContext";
 import {
   LayoutDashboard,
   Package,
+  Tag,
+  Layers,
   Image as ImageIcon,
+  FileText,
+  Share2,
   MousePointerClick,
   MessageSquare,
-  ShieldCheck,
+  Globe,
+  Settings,
   ShieldAlert,
+  Sparkles,
+  CheckCircle2,
   ArrowLeft,
   Lock,
   KeyRound,
-  CheckCircle2,
-  Share2,
+  ExternalLink,
+  Menu,
+  X,
+  ChevronRight,
+  LogOut,
+  ShieldCheck,
 } from "lucide-react";
+
+interface NavGroup {
+  groupTitle: string;
+  items: {
+    name: string;
+    href: string;
+    icon: any;
+    badge?: string;
+  }[];
+}
+
+const NAV_GROUPS: NavGroup[] = [
+  {
+    groupTitle: "Core Commerce",
+    items: [
+      { name: "Overview", href: "/admin", icon: LayoutDashboard },
+      { name: "Products", href: "/admin/products", icon: Package },
+      { name: "Affiliate Offers", href: "/admin/offers", icon: Tag },
+      { name: "Categories", href: "/admin/categories", icon: Layers },
+    ],
+  },
+  {
+    groupTitle: "Marketing & Content",
+    items: [
+      { name: "Homepage Banners", href: "/admin/banners", icon: ImageIcon },
+      { name: "CMS & Buying Guides", href: "/admin/cms", icon: FileText },
+      { name: "Social Media Hub", href: "/admin/social", icon: Share2 },
+    ],
+  },
+  {
+    groupTitle: "Reports & Customer",
+    items: [
+      { name: "Click Analytics & CSV", href: "/admin/clicks", icon: MousePointerClick },
+      { name: "Customer Inquiries", href: "/admin/inquiries", icon: MessageSquare },
+    ],
+  },
+  {
+    groupTitle: "Platform & Security",
+    items: [
+      { name: "SEO Manager", href: "/admin/seo", icon: Globe },
+      { name: "Website Settings", href: "/admin/settings", icon: Settings },
+      { name: "Security & Roles", href: "/admin/security", icon: ShieldAlert },
+      { name: "AI Command Center", href: "/admin/ai-command-center", icon: Sparkles, badge: "AI" },
+    ],
+  },
+];
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const router = useRouter();
-  const { user, loading, refreshUser } = useAuth();
+  const { user, loading, refreshUser, logout } = useAuth();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   // In-page admin login state
   const [adminEmail, setAdminEmail] = useState("admin@avnivo.com");
@@ -100,7 +157,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             AVNIVO Admin Portal
           </h2>
           <p className="text-xs text-gray-500 text-center mb-6">
-            Authorized management area for product catalog, affiliate merchants, and promotional banners.
+            Authorized management area for product catalog, affiliate merchants, and platform controls.
           </p>
 
           {loginError && (
@@ -176,71 +233,193 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     );
   }
 
-  const navLinks = [
-    { name: "⚡ AI Command Center", href: "/admin/ai-command-center", icon: LayoutDashboard },
-    { name: "🛡️ Approvals", href: "/admin/ai-command-center/approvals", icon: CheckCircle2 },
-    { name: "📱 10 Social Channels", href: "/admin/ai-command-center/social", icon: Share2 },
-    { name: "🔒 Security Panel", href: "/admin/ai-command-center/security", icon: ShieldAlert },
-    { name: "Overview & Analytics", href: "/admin", icon: LayoutDashboard },
-    { name: "Products & Offers", href: "/admin/products", icon: Package },
-    { name: "Homepage Banners", href: "/admin/banners", icon: ImageIcon },
-    { name: "Affiliate Click Logs", href: "/admin/clicks", icon: MousePointerClick },
-    { name: "Support Inquiries", href: "/admin/inquiries", icon: MessageSquare },
-  ];
-
   return (
-    <div className="min-h-screen bg-surface">
-      {/* Admin Top Header */}
-      <div className="bg-primary text-white py-3 px-4 sm:px-6 border-b border-blue-900 shadow-sm">
-        <div className="max-w-7xl mx-auto flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <span className="font-black text-lg tracking-wider font-display text-white">
-              AVN<span className="text-secondary">IVO</span>
-            </span>
-            <span className="px-2 py-0.5 bg-blue-500/20 text-blue-300 font-bold text-[10px] rounded border border-blue-400/30 uppercase">
-              Control Panel
-            </span>
-          </div>
-
-          <div className="flex items-center gap-4 text-xs">
-            <span className="text-gray-300">
-              Admin: <strong className="text-white">{user.name}</strong>
-            </span>
-            <Link
-              href="/"
-              className="inline-flex items-center gap-1 text-blue-300 hover:text-white underline"
+    <div className="min-h-screen bg-[#F8FAFC] flex flex-col">
+      {/* Top Admin Navbar */}
+      <header className="sticky top-0 z-40 bg-[#0F172A] text-white border-b border-slate-800 shadow-md">
+        <div className="px-4 sm:px-6 h-16 flex items-center justify-between">
+          {/* Left: Mobile Toggle & Brand Logo */}
+          <div className="flex items-center gap-3 sm:gap-4">
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="p-2 rounded-xl text-slate-300 hover:text-white hover:bg-slate-800 lg:hidden transition-colors"
+              aria-label="Toggle menu"
             >
-              <ArrowLeft className="w-3.5 h-3.5" />
-              <span>Back to Store</span>
+              {mobileMenuOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
+            </button>
+
+            <Link href="/admin" className="flex items-center gap-2.5">
+              <span className="font-black text-xl tracking-wider font-display text-white">
+                AVN<span className="text-secondary">IVO</span>
+              </span>
+              <span className="hidden sm:inline-flex px-2.5 py-0.5 bg-blue-500/20 text-blue-300 font-bold text-[10px] rounded-full border border-blue-400/30 uppercase tracking-wider">
+                Affiliate Control Hub
+              </span>
             </Link>
           </div>
-        </div>
-      </div>
 
-      {/* Main Admin Sub-nav & Container */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6">
-        <div className="flex items-center gap-2 overflow-x-auto pb-4 mb-6 border-b border-gray-200">
-          {navLinks.map((item) => {
-            const Icon = item.icon;
-            const active = pathname === item.href;
-            return (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={`flex items-center gap-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all shrink-0 ${
-                  active
-                    ? "bg-secondary text-white shadow-md"
-                    : "bg-white text-charcoal border border-gray-200 hover:bg-gray-50"
-                }`}
+          {/* Right: User Role & Actions */}
+          <div className="flex items-center gap-3 sm:gap-4 text-xs">
+            <Link
+              href="/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hidden md:inline-flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl font-medium border border-slate-700 transition-colors"
+            >
+              <span>Visit Public Store</span>
+              <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
+            </Link>
+
+            <div className="flex items-center gap-2 pl-2 sm:pl-3 border-l border-slate-800">
+              <div className="w-8 h-8 rounded-full bg-secondary text-white font-bold flex items-center justify-center text-xs shadow-inner">
+                {user.name?.[0]?.toUpperCase() || "A"}
+              </div>
+              <div className="hidden sm:block text-left">
+                <p className="font-bold text-white text-[11px] leading-tight truncate max-w-[120px]">
+                  {user.name}
+                </p>
+                <span className="inline-flex items-center gap-1 text-[10px] text-green-400 font-medium">
+                  <ShieldCheck className="w-3 h-3" /> Super Admin
+                </span>
+              </div>
+              <button
+                onClick={logout}
+                className="p-2 text-slate-400 hover:text-red-400 rounded-xl hover:bg-slate-800 transition-colors"
+                title="Sign out"
               >
-                <Icon className="w-4 h-4" />
-                <span>{item.name}</span>
-              </Link>
-            );
-          })}
+                <LogOut className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
         </div>
+      </header>
 
-        {children}
+      {/* Main Admin Workspace with Sidebar */}
+      <div className="flex-1 flex max-w-[1600px] w-full mx-auto">
+        {/* Desktop Sidebar */}
+        <aside className="hidden lg:block w-64 bg-white border-r border-slate-200 shrink-0 p-4 sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto">
+          <nav className="space-y-6">
+            {NAV_GROUPS.map((group, gIdx) => (
+              <div key={gIdx} className="space-y-1">
+                <p className="px-3 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
+                  {group.groupTitle}
+                </p>
+                <div className="space-y-0.5 pt-1">
+                  {group.items.map((item) => {
+                    const Icon = item.icon;
+                    const isActive = pathname === item.href;
+                    return (
+                      <Link
+                        key={item.href}
+                        href={item.href}
+                        className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                          isActive
+                            ? "bg-secondary text-white shadow-sm font-semibold"
+                            : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+                        }`}
+                      >
+                        <div className="flex items-center gap-2.5">
+                          <Icon className={`w-4 h-4 shrink-0 ${isActive ? "text-white" : "text-slate-400"}`} />
+                          <span>{item.name}</span>
+                        </div>
+                        {item.badge && (
+                          <span
+                            className={`px-1.5 py-0.2 rounded text-[9px] font-black uppercase ${
+                              isActive ? "bg-white text-secondary" : "bg-blue-50 text-secondary"
+                            }`}
+                          >
+                            {item.badge}
+                          </span>
+                        )}
+                      </Link>
+                    );
+                  })}
+                </div>
+              </div>
+            ))}
+          </nav>
+        </aside>
+
+        {/* Mobile Drawer Overlay */}
+        {mobileMenuOpen && (
+          <div className="fixed inset-0 z-50 lg:hidden">
+            <div
+              className="fixed inset-0 bg-slate-900/60 backdrop-blur-sm"
+              onClick={() => setMobileMenuOpen(false)}
+            />
+            <div className="fixed inset-y-0 left-0 w-72 bg-white shadow-2xl p-4 overflow-y-auto z-50">
+              <div className="flex items-center justify-between pb-4 mb-4 border-b border-slate-100">
+                <span className="font-black text-lg tracking-wider font-display text-primary">
+                  AVN<span className="text-secondary">IVO</span> Admin
+                </span>
+                <button
+                  onClick={() => setMobileMenuOpen(false)}
+                  className="p-1.5 rounded-xl text-slate-400 hover:text-slate-700"
+                >
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
+
+              <nav className="space-y-6">
+                {NAV_GROUPS.map((group, gIdx) => (
+                  <div key={gIdx} className="space-y-1">
+                    <p className="px-3 text-[10px] font-extrabold uppercase tracking-wider text-slate-400">
+                      {group.groupTitle}
+                    </p>
+                    <div className="space-y-0.5 pt-1">
+                      {group.items.map((item) => {
+                        const Icon = item.icon;
+                        const isActive = pathname === item.href;
+                        return (
+                          <Link
+                            key={item.href}
+                            href={item.href}
+                            onClick={() => setMobileMenuOpen(false)}
+                            className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-xs font-bold transition-all ${
+                              isActive
+                                ? "bg-secondary text-white shadow-sm"
+                                : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
+                            }`}
+                          >
+                            <div className="flex items-center gap-2.5">
+                              <Icon className={`w-4 h-4 shrink-0 ${isActive ? "text-white" : "text-slate-400"}`} />
+                              <span>{item.name}</span>
+                            </div>
+                            {item.badge && (
+                              <span
+                                className={`px-1.5 py-0.2 rounded text-[9px] font-black uppercase ${
+                                  isActive ? "bg-white text-secondary" : "bg-blue-50 text-secondary"
+                                }`}
+                              >
+                                {item.badge}
+                              </span>
+                            )}
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
+              </nav>
+
+              <div className="mt-8 pt-4 border-t border-slate-100">
+                <Link
+                  href="/"
+                  target="_blank"
+                  className="flex items-center justify-between w-full px-3 py-2 text-xs font-semibold text-slate-500 hover:text-primary rounded-xl hover:bg-slate-50"
+                >
+                  <span>Visit Public Store</span>
+                  <ExternalLink className="w-4 h-4" />
+                </Link>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Content Area */}
+        <main className="flex-1 p-4 sm:p-6 lg:p-8 min-w-0 overflow-y-auto">
+          {children}
+        </main>
       </div>
     </div>
   );

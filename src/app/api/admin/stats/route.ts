@@ -38,19 +38,42 @@ export async function GET() {
   }
 
   try {
+    const now = new Date();
+    // Today start (midnight IST)
+    const today = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+    const todayIso = today.toISOString();
+
+    // 7 days ago
+    const weekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const weekIso = weekAgo.toISOString();
+
+    // Month start (1st of current month)
+    const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+    const monthIso = monthStart.toISOString();
+
     const [
       totalProducts,
+      publishedProducts,
+      draftProducts,
       totalCategories,
       totalMerchants,
       totalUsers,
       totalClicks,
+      clicksToday,
+      clicksThisWeek,
+      clicksThisMonth,
       pendingInquiries,
     ] = await Promise.all([
       getCount("Product"),
+      getCount("Product", "availability=neq.UNPUBLISHED"),
+      getCount("Product", "availability=eq.UNPUBLISHED"),
       getCount("Category"),
       getCount("Merchant"),
       getCount("User"),
       getCount("AffiliateClickLog"),
+      getCount("AffiliateClickLog", `createdAt=gte.${todayIso}`),
+      getCount("AffiliateClickLog", `createdAt=gte.${weekIso}`),
+      getCount("AffiliateClickLog", `createdAt=gte.${monthIso}`),
       getCount("SupportInquiry", "status=eq.PENDING"),
     ]);
 
@@ -58,7 +81,7 @@ export async function GET() {
     let topClickedProducts: any[] = [];
     try {
       const topRes = await fetch(
-        `${SUPABASE_URL}/rest/v1/Product?select=id,name,slug,clicksCount,viewsCount,indicativePrice&order=clicksCount.desc&limit=5`,
+        `${SUPABASE_URL}/rest/v1/Product?select=id,name,slug,clicksCount,viewsCount,indicativePrice,availability,category:Category(name)&order=clicksCount.desc&limit=6`,
         {
           headers: {
             apikey: SUPABASE_KEY,
@@ -74,41 +97,72 @@ export async function GET() {
       console.warn("Top products fetch error:", e);
     }
 
-    // Fetch merchants for clicks breakdown
+    // Fetch merchants and calculate outbound click distribution
     let merchantClicks: any[] = [];
     try {
-      const merchRes = await fetch(`${SUPABASE_URL}/rest/v1/Merchant?select=id,name,slug`, {
-        headers: {
-          apikey: SUPABASE_KEY,
-          Authorization: `Bearer ${SUPABASE_KEY}`,
-        },
-        cache: "no-store",
-      });
+      const [merchRes, clicksRes] = await Promise.all([
+        fetch(`${SUPABASE_URL}/rest/v1/Merchant?select=id,name,slug`, {
+          headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` },
+          cache: "no-store",
+        }),
+        fetch(`${SUPABASE_URL}/rest/v1/AffiliateClickLog?select=merchantId`, {
+          headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` },
+          cache: "no-store",
+        }),
+      ]);
+
       if (merchRes.ok) {
         const merchants = await merchRes.json();
-        merchantClicks = merchants.map((m: any) => ({
-          id: m.id,
-          name: m.name,
-          slug: m.slug,
-          clicks: 0,
-        }));
+        const logs = clicksRes.ok ? await clicksRes.json() : [];
+
+        merchantClicks = merchants.map((m: any) => {
+          const count = logs.filter((l: any) => l.merchantId === m.id).length;
+          return {
+            id: m.id,
+            name: m.name,
+            slug: m.slug,
+            clicks: count,
+          };
+        });
       }
     } catch (e) {
       console.warn("Merchants fetch error:", e);
     }
 
+    // Fetch recent 10 click activity logs
+    let recentClicks: any[] = [];
+    try {
+      const recentRes = await fetch(
+        `${SUPABASE_URL}/rest/v1/AffiliateClickLog?select=id,createdAt,utmSource,utmCampaign,product:Product(name,slug),merchant:Merchant(name)&order=createdAt.desc&limit=10`,
+        {
+          headers: { apikey: SUPABASE_KEY, Authorization: `Bearer ${SUPABASE_KEY}` },
+          cache: "no-store",
+        }
+      );
+      if (recentRes.ok) {
+        recentClicks = await recentRes.json();
+      }
+    } catch (e) {
+      console.warn("Recent clicks fetch error:", e);
+    }
+
     return NextResponse.json({
       stats: {
         totalProducts,
+        publishedProducts,
+        draftProducts,
         totalCategories,
         totalMerchants,
         totalUsers,
         totalClicks,
+        clicksToday,
+        clicksThisWeek,
+        clicksThisMonth,
         pendingInquiries,
       },
       merchantClicks,
       topClickedProducts,
-      recentClicks: [],
+      recentClicks,
     });
   } catch (err: any) {
     console.error("Admin stats error:", err);

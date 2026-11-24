@@ -21,6 +21,7 @@ import {
   Link2,
   RefreshCw,
   CheckCircle2,
+  Copy,
 } from "lucide-react";
 
 interface MerchantItem {
@@ -323,6 +324,51 @@ export default function AdminProductsPage() {
     }
   };
 
+  const handleDuplicateProduct = async (p: any) => {
+    try {
+      const duplicatedData = {
+        name: `${p.name} (Copy)`,
+        slug: `${p.slug}-copy-${Date.now().toString().slice(-4)}`,
+        categoryId: p.categoryId,
+        brandId: p.brandId,
+        indicativePrice: p.indicativePrice,
+        originalPrice: p.originalPrice || p.indicativePrice,
+        imageUrl: p.imageUrl || (p.images && p.images[0]) || "",
+        shortDescription: p.shortDescription || "",
+        description: p.description || p.name,
+        availability: "UNPUBLISHED",
+        isFeatured: false,
+        isTrending: false,
+        isBestDeal: false,
+        isTopPick: false,
+        offers: (p.merchantOffers || []).map((o: any) => ({
+          merchantId: o.merchantId || o.merchant?.id,
+          affiliateUrl: o.affiliateUrl || "",
+          indicativePrice: o.indicativePrice || p.indicativePrice,
+          originalPrice: o.originalPrice || p.originalPrice,
+          deliveryInfo: o.deliveryInfo || "Free Delivery",
+        })),
+      };
+
+      const res = await fetch("/api/admin/products", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(duplicatedData),
+      });
+
+      if (res.ok) {
+        setSuccessMessage(`Product "${p.name}" duplicated as unpublished draft!`);
+        setTimeout(() => setSuccessMessage(""), 4000);
+        fetchProducts();
+      } else {
+        const err = await res.json();
+        alert(err.error || "Failed to duplicate product.");
+      }
+    } catch {
+      alert("Network error while duplicating product.");
+    }
+  };
+
   const handleSaveProduct = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !categoryId || !indicativePrice) {
@@ -577,7 +623,10 @@ export default function AdminProductsPage() {
                             </span>
                           ))}
                           {(!p.merchantOffers || p.merchantOffers.length === 0) && (
-                            <span className="text-[11px] text-gray-400 italic">No offers set</span>
+                            <span className="inline-flex items-center gap-1 text-[10px] text-amber-700 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded font-bold">
+                              <AlertCircle className="w-2.5 h-2.5" />
+                              <span>No Offers</span>
+                            </span>
                           )}
                         </div>
                       </td>
@@ -607,6 +656,14 @@ export default function AdminProductsPage() {
 
                       <td className="py-3 px-4 text-right">
                         <div className="flex items-center justify-end gap-1.5">
+                          <button
+                            onClick={() => handleDuplicateProduct(p)}
+                            className="p-1.5 rounded-lg text-gray-500 hover:text-secondary hover:bg-blue-50 transition-colors"
+                            title="Duplicate Product (as draft)"
+                          >
+                            <Copy className="w-4 h-4" />
+                          </button>
+
                           <button
                             onClick={() => handleOpenEdit(p)}
                             className="p-1.5 rounded-lg text-gray-500 hover:text-secondary hover:bg-blue-50 transition-colors"
