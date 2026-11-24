@@ -6,7 +6,7 @@ import { Footer } from "@/components/layout/Footer";
 import { PwaInstallPrompt } from "@/components/common/PwaInstallPrompt";
 
 const envUrl = process.env.NEXT_PUBLIC_APP_URL;
-const appBaseUrl = envUrl && !envUrl.includes("localhost") ? envUrl : "https://avnivo.vercel.app";
+const appBaseUrl = envUrl && !envUrl.includes("localhost") ? envUrl : "https://avnivo.in";
 
 export const metadata: Metadata = {
   title: "AVNIVO – Discover. Compare. Shop. | Next-Gen E-commerce & Affiliate Platform",

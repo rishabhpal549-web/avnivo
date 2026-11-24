@@ -8,7 +8,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const baseUrl =
     envUrl && !envUrl.includes("localhost")
       ? envUrl
-      : "https://avnivo.vercel.app";
+      : "https://avnivo.in";
 
   // Static routes
   const staticRoutes: MetadataRoute.Sitemap = [

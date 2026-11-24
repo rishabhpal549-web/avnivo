@@ -5,7 +5,7 @@ export default function robots(): MetadataRoute.Robots {
   const baseUrl =
     envUrl && !envUrl.includes("localhost")
       ? envUrl
-      : "https://avnivo.vercel.app";
+      : "https://avnivo.in";
 
   return {
     rules: [

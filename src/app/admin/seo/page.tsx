@@ -26,7 +26,7 @@ export default function AdminSeoPage() {
   );
   const [googleVerification, setGoogleVerification] = useState("google0b1c602e12dd4b99");
   const [ga4Id, setGa4Id] = useState("");
-  const [canonicalUrl, setCanonicalUrl] = useState("https://avnivo.vercel.app");
+  const [canonicalUrl, setCanonicalUrl] = useState("https://avnivo.in");
 
   useEffect(() => {
     fetch("/api/admin/settings")
