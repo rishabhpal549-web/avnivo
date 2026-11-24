@@ -63,8 +63,45 @@ export default function RootLayout({
 }: {
   children: React.ReactNode;
 }) {
+  const orgWebsiteSchema = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": `${appBaseUrl}/#organization`,
+        name: "AVNIVO",
+        url: appBaseUrl,
+        logo: `${appBaseUrl}/logo.png`,
+        description: "India's next-generation e-commerce discovery & price comparison platform.",
+        sameAs: [
+          "https://www.youtube.com/@AVNIVOOfficialindia",
+          "https://www.linkedin.com/in/avnivo-india-3177a3451",
+          "https://www.pinterest.com/avnivoofficialindia",
+        ],
+      },
+      {
+        "@type": "WebSite",
+        "@id": `${appBaseUrl}/#website`,
+        url: appBaseUrl,
+        name: "AVNIVO",
+        publisher: { "@id": `${appBaseUrl}/#organization` },
+        potentialAction: {
+          "@type": "SearchAction",
+          target: `${appBaseUrl}/shop?q={search_term_string}`,
+          "query-input": "required name=search_term_string",
+        },
+      },
+    ],
+  };
+
   return (
     <html lang="en">
+      <head>
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(orgWebsiteSchema) }}
+        />
+      </head>
       <body className="min-h-screen flex flex-col font-sans antialiased bg-white text-charcoal">
         <Providers>
           <Header />

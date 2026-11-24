@@ -17,11 +17,36 @@ export async function generateMetadata({ params }: CategoryPageProps) {
     });
   } catch {}
 
+  if (!category) {
+    try {
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://ibrzfiwskfhlkfdjbyfv.supabase.co";
+      const supabaseKey =
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlicnpmaXdza2ZobGtmZGpieWZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTUyNjY1NjcsImV4cCI6MjExMDg0MjU2N30.XQALfrWAZbazKNZJpbxXAYr9DBr7IUURKE45jjsfF3o";
+
+      const res = await fetch(
+        `${supabaseUrl}/rest/v1/Category?slug=eq.${encodeURIComponent(params.slug)}&select=id,name,nameHindi,slug,description`,
+        {
+          headers: { apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}` },
+          cache: "no-store",
+        }
+      );
+      if (res.ok) {
+        const list = await res.json();
+        if (list.length > 0) category = list[0];
+      }
+    } catch {}
+  }
+
   if (!category) return { title: "Category Deals | AVNIVO India" };
 
   return {
     title: `${category.name} – Best Deals & Price Comparison | AVNIVO`,
     description: category.description || `Compare prices and discover top deals in ${category.name} on AVNIVO.`,
+    openGraph: {
+      title: `${category.name} | AVNIVO India Deals`,
+      description: category.description || `Browse authentic deals in ${category.name} on AVNIVO.`,
+    },
   };
 }
 

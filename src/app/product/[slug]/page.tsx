@@ -20,15 +20,45 @@ export async function generateMetadata({ params }: ProductPageProps) {
   }
 
   if (!product) {
+    try {
+      const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://ibrzfiwskfhlkfdjbyfv.supabase.co";
+      const supabaseKey =
+        process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+        "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlicnpmaXdza2ZobGtmZGpieWZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTUyNjY1NjcsImV4cCI6MjExMDg0MjU2N30.XQALfrWAZbazKNZJpbxXAYr9DBr7IUURKE45jjsfF3o";
+
+      const res = await fetch(
+        `${supabaseUrl}/rest/v1/Product?slug=eq.${encodeURIComponent(params.slug)}&select=name,description,shortDescription,indicativePrice,originalPrice,images`,
+        {
+          headers: { apikey: supabaseKey, Authorization: `Bearer ${supabaseKey}` },
+          cache: "no-store",
+        }
+      );
+      if (res.ok) {
+        const list = await res.json();
+        if (list.length > 0) product = list[0];
+      }
+    } catch {}
+  }
+
+  if (!product) {
     return { title: "Product Detail | AVNIVO India" };
+  }
+
+  let ogImage = "";
+  try {
+    const parsed = JSON.parse(product.images);
+    ogImage = parsed[0] || "";
+  } catch {
+    ogImage = product.images || "";
   }
 
   return {
     title: `${product.name} – Indicative Price & Genuine Deals | AVNIVO India`,
     description: `Discover deals for ${product.name}. Indicative price starting at ₹${product.indicativePrice.toLocaleString("en-IN")} on Amazon, Flipkart & Meesho.`,
     openGraph: {
-      title: `${product.name} | AVNIVO Affiliate Discovery`,
-      description: product.shortDescription || product.description.slice(0, 160),
+      title: `${product.name} | AVNIVO Deals`,
+      description: product.shortDescription || product.description?.slice(0, 160),
+      images: ogImage ? [{ url: ogImage, width: 800, height: 800, alt: product.name }] : [],
     },
   };
 }
@@ -201,10 +231,45 @@ export default async function ProductPage({ params }: ProductPageProps) {
     };
   });
 
+  const jsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: formattedProduct.name,
+    image: formattedProduct.images,
+    description: formattedProduct.shortDescription || formattedProduct.description?.slice(0, 200),
+    sku: formattedProduct.slug,
+    brand: {
+      "@type": "Brand",
+      name: formattedProduct.brandName || "AVNIVO Curated",
+    },
+    offers: {
+      "@type": "AggregateOffer",
+      priceCurrency: "INR",
+      lowPrice: formattedProduct.indicativePrice,
+      highPrice: formattedProduct.originalPrice || formattedProduct.indicativePrice,
+      offerCount: formattedProduct.offers.length || 1,
+      availability:
+        formattedProduct.availability === "IN_STOCK"
+          ? "https://schema.org/InStock"
+          : "https://schema.org/OutOfStock",
+    },
+    aggregateRating: {
+      "@type": "AggregateRating",
+      ratingValue: formattedProduct.rating,
+      reviewCount: formattedProduct.reviewCount,
+    },
+  };
+
   return (
-    <ProductDetailClient
-      product={formattedProduct}
-      relatedProducts={formattedRelated}
-    />
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      <ProductDetailClient
+        product={formattedProduct}
+        relatedProducts={formattedRelated}
+      />
+    </>
   );
 }
