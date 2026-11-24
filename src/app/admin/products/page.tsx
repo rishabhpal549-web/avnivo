@@ -19,6 +19,8 @@ import {
   AlertCircle,
   Tag,
   Link2,
+  RefreshCw,
+  CheckCircle2,
 } from "lucide-react";
 
 interface MerchantItem {
@@ -78,17 +80,26 @@ export default function AdminProductsPage() {
   const [uploadError, setUploadError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
+  const [successMessage, setSuccessMessage] = useState("");
+  const [pageError, setPageError] = useState("");
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const fetchProducts = () => {
     setLoading(true);
+    setPageError("");
     fetch("/api/admin/products")
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.products) setProducts(data.products);
+      .then(async (res) => {
+        const data = await res.json();
+        if (res.ok && data.products) {
+          setProducts(data.products);
+        } else {
+          setPageError(data.error || "Failed to load products");
+        }
       })
-      .catch(() => {})
+      .catch(() => {
+        setPageError("Connection error loading products. Please click Refresh.");
+      })
       .finally(() => setLoading(false));
   };
 
@@ -98,7 +109,18 @@ export default function AdminProductsPage() {
     fetch("/api/categories")
       .then((res) => res.json())
       .then((data) => {
-        if (data.categories) setCategories(data.categories);
+        if (data.categories) {
+          const flat: CategoryItem[] = [];
+          data.categories.forEach((cat: any) => {
+            flat.push({ id: cat.id, name: cat.name, slug: cat.slug, nameHindi: cat.nameHindi });
+            if (Array.isArray(cat.children)) {
+              cat.children.forEach((sub: any) => {
+                flat.push({ id: sub.id, name: `↳ ${sub.name}`, slug: sub.slug, nameHindi: sub.nameHindi });
+              });
+            }
+          });
+          setCategories(flat);
+        }
       })
       .catch(() => {});
 
@@ -344,6 +366,11 @@ export default function AdminProductsPage() {
       const data = await res.json();
       if (res.ok) {
         setShowModal(false);
+        setSuccessMessage(
+          isEditing
+            ? `Product "${name}" updated successfully!`
+            : `Product "${name}" created successfully and is now live on the dashboard!`
+        );
         fetchProducts();
       } else {
         setFormError(data.error || "Failed to save product.");
@@ -378,14 +405,56 @@ export default function AdminProductsPage() {
           </p>
         </div>
 
-        <button
-          onClick={handleOpenAdd}
-          className="inline-flex items-center gap-2 bg-secondary hover:bg-secondary-dark text-white text-xs font-bold px-4 py-3 rounded-xl shadow-md transition-all self-start sm:self-auto"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Add New Product</span>
-        </button>
+        <div className="flex items-center gap-2.5 self-start sm:self-auto">
+          <button
+            onClick={fetchProducts}
+            disabled={loading}
+            className="inline-flex items-center gap-1.5 bg-white hover:bg-gray-50 border border-gray-200 text-charcoal text-xs font-semibold px-3 py-2.5 rounded-xl shadow-sm transition-all"
+            title="Refresh product list"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 text-secondary ${loading ? "animate-spin" : ""}`} />
+            <span>Refresh</span>
+          </button>
+
+          <button
+            onClick={handleOpenAdd}
+            className="inline-flex items-center gap-2 bg-secondary hover:bg-secondary-dark text-white text-xs font-bold px-4 py-2.5 rounded-xl shadow-md transition-all"
+          >
+            <Plus className="w-4 h-4" />
+            <span>Add New Product</span>
+          </button>
+        </div>
       </div>
+
+      {successMessage && (
+        <div className="p-4 bg-green-50 border border-green-200 rounded-2xl text-xs text-green-700 flex items-center justify-between shadow-sm">
+          <div className="flex items-center gap-2 font-medium">
+            <CheckCircle2 className="w-4 h-4 text-green-600 shrink-0" />
+            <span>{successMessage}</span>
+          </div>
+          <button
+            onClick={() => setSuccessMessage("")}
+            className="text-gray-400 hover:text-charcoal p-1"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
+
+      {pageError && (
+        <div className="p-4 bg-red-50 border border-red-200 rounded-2xl text-xs text-red-700 flex items-center justify-between shadow-sm">
+          <div className="flex items-center gap-2">
+            <AlertCircle className="w-4 h-4 text-red-600 shrink-0" />
+            <span>{pageError}</span>
+          </div>
+          <button
+            onClick={fetchProducts}
+            className="px-2.5 py-1 bg-red-100 hover:bg-red-200 text-red-800 rounded-lg font-bold text-[11px]"
+          >
+            Retry
+          </button>
+        </div>
+      )}
 
       {/* Search & Filter Toolbar */}
       <div className="bg-white p-4 rounded-2xl border border-gray-100 shadow-sm flex flex-col sm:flex-row gap-3 items-center justify-between">
@@ -878,6 +947,14 @@ export default function AdminProductsPage() {
                   </label>
                 </div>
               </div>
+
+              {/* Bottom Error Indicator if any */}
+              {formError && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-600 flex items-center gap-2">
+                  <AlertCircle className="w-4 h-4 shrink-0" />
+                  <span>{formError}</span>
+                </div>
+              )}
 
               {/* Submit Buttons */}
               <div className="pt-4 border-t border-gray-100 flex items-center justify-end gap-3">

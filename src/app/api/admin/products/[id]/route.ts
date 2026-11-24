@@ -1,6 +1,21 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
 import { getCurrentUser } from "@/lib/auth";
+
+export const dynamic = "force-dynamic";
+
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://ibrzfiwskfhlkfdjbyfv.supabase.co";
+const SUPABASE_KEY =
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlicnpmaXdza2ZobGtmZGpieWZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTUyNjY1NjcsImV4cCI6MjExMDg0MjU2N30.XQALfrWAZbazKNZJpbxXAYr9DBr7IUURKE45jjsfF3o";
+
+function getHeaders() {
+  return {
+    apikey: SUPABASE_KEY,
+    Authorization: `Bearer ${SUPABASE_KEY}`,
+    "Content-Type": "application/json",
+    Prefer: "return=representation",
+  };
+}
 
 export async function GET(
   req: NextRequest,
@@ -12,22 +27,23 @@ export async function GET(
   }
 
   try {
-    const product = await prisma.product.findUnique({
-      where: { id: params.id },
-      include: {
-        category: true,
-        brand: true,
-        merchantOffers: {
-          include: { merchant: true },
-        },
-      },
+    const endpoint = `${SUPABASE_URL}/rest/v1/Product?id=eq.${encodeURIComponent(params.id)}&select=id,name,slug,description,shortDescription,indicativePrice,originalPrice,discountPercent,rating,reviewCount,isVerifiedRating,images,keyFeatures,specifications,isFeatured,isTrending,isBestDeal,isTopPick,availability,priceLastUpdated,createdAt,updatedAt,categoryId,brandId,category:Category(id,name,nameHindi,slug),brand:Brand(id,name,slug),merchantOffers:MerchantOffer(id,merchantId,indicativePrice,originalPrice,discountPercent,availability,deliveryInfo,lastVerifiedAt,affiliateUrl,merchant:Merchant(id,name,slug,logoUrl))`;
+
+    const res = await fetch(endpoint, {
+      headers: getHeaders(),
+      cache: "no-store",
     });
 
-    if (!product) {
+    if (!res.ok) {
       return NextResponse.json({ error: "Product not found" }, { status: 404 });
     }
 
-    return NextResponse.json({ product });
+    const data = await res.json();
+    if (!data || data.length === 0) {
+      return NextResponse.json({ error: "Product not found" }, { status: 404 });
+    }
+
+    return NextResponse.json({ product: data[0] });
   } catch (err: any) {
     return NextResponse.json({ error: "Failed to fetch product", details: err.message }, { status: 500 });
   }
@@ -61,15 +77,15 @@ export async function PUT(
       offers,
     } = body;
 
-    const indPrice = indicativePrice ? parseFloat(indicativePrice) : undefined;
-    const origPrice = originalPrice ? parseFloat(originalPrice) : indPrice;
+    const indPrice = indicativePrice !== undefined && indicativePrice !== "" ? parseFloat(indicativePrice) : undefined;
+    const origPrice = originalPrice !== undefined && originalPrice !== "" ? parseFloat(originalPrice) : indPrice;
     const discountPercent =
       origPrice && indPrice && origPrice > indPrice
         ? Math.round(((origPrice - indPrice) / origPrice) * 100)
         : 0;
 
     const updateData: any = {
-      updatedAt: new Date(),
+      updatedAt: new Date().toISOString(),
     };
 
     if (name !== undefined) updateData.name = name;
@@ -91,41 +107,70 @@ export async function PUT(
     if (isBestDeal !== undefined) updateData.isBestDeal = Boolean(isBestDeal);
     if (isTopPick !== undefined) updateData.isTopPick = Boolean(isTopPick);
 
-    const updatedProduct = await prisma.product.update({
-      where: { id: params.id },
-      data: updateData,
+    // 1. Update Product
+    const updateRes = await fetch(`${SUPABASE_URL}/rest/v1/Product?id=eq.${encodeURIComponent(params.id)}`, {
+      method: "PATCH",
+      headers: getHeaders(),
+      body: JSON.stringify(updateData),
     });
 
-    // Update or add merchant offers if provided
+    if (!updateRes.ok) {
+      const errText = await updateRes.text();
+      console.error("Product update error:", updateRes.status, errText);
+      return NextResponse.json({ error: "Failed to update product in database" }, { status: 500 });
+    }
+
+    const updatedRows = await updateRes.json();
+    const updatedProduct = updatedRows[0];
+
+    // 2. Update merchant offers if provided
     if (Array.isArray(offers)) {
-      // Remove old offers for this product if replacing
-      await prisma.merchantOffer.deleteMany({
-        where: { productId: params.id },
+      // Delete old offers
+      await fetch(`${SUPABASE_URL}/rest/v1/MerchantOffer?productId=eq.${encodeURIComponent(params.id)}`, {
+        method: "DELETE",
+        headers: getHeaders(),
       });
 
-      for (const off of offers) {
-        if (off.merchantId && off.affiliateUrl && off.indicativePrice) {
-          await prisma.merchantOffer.create({
-            data: {
-              productId: params.id,
-              merchantId: off.merchantId,
-              affiliateUrl: off.affiliateUrl,
-              indicativePrice: parseFloat(off.indicativePrice),
-              originalPrice: off.originalPrice ? parseFloat(off.originalPrice) : null,
-              discountPercent: off.discountPercent ? parseFloat(off.discountPercent) : null,
-              deliveryInfo: off.deliveryInfo || "Free Delivery",
-              availability: off.availability || "IN_STOCK",
-              isActive: true,
-            },
+      // Insert new valid offers
+      const validOffers = offers.filter(
+        (o) => o.merchantId && o.affiliateUrl && o.affiliateUrl.trim().length > 0
+      );
+
+      for (const off of validOffers) {
+        const offPrice = off.indicativePrice ? parseFloat(off.indicativePrice) : (indPrice || 0);
+        const offOrig = off.originalPrice ? parseFloat(off.originalPrice) : null;
+        const offDisc =
+          offOrig && offOrig > offPrice ? Math.round(((offOrig - offPrice) / offOrig) * 100) : null;
+
+        const offerPayload = {
+          id: `off_${Date.now()}_${Math.random().toString(36).slice(2, 7)}`,
+          productId: params.id,
+          merchantId: off.merchantId,
+          affiliateUrl: off.affiliateUrl.trim(),
+          indicativePrice: offPrice,
+          originalPrice: offOrig,
+          discountPercent: offDisc,
+          deliveryInfo: off.deliveryInfo || "Free Delivery",
+          availability: off.availability || "IN_STOCK",
+          updatedAt: new Date().toISOString(),
+        };
+
+        try {
+          await fetch(`${SUPABASE_URL}/rest/v1/MerchantOffer`, {
+            method: "POST",
+            headers: getHeaders(),
+            body: JSON.stringify(offerPayload),
           });
+        } catch (offerErr) {
+          console.error("Error updating merchant offer:", offerErr);
         }
       }
     }
 
     return NextResponse.json({ success: true, product: updatedProduct });
   } catch (err: any) {
-    console.error("Update product error:", err);
-    return NextResponse.json({ error: "Failed to update product", details: err.message }, { status: 500 });
+    console.error("PUT product exception:", err);
+    return NextResponse.json({ error: err.message || "Failed to update product" }, { status: 500 });
   }
 }
 
@@ -139,12 +184,33 @@ export async function DELETE(
   }
 
   try {
-    await prisma.product.delete({
-      where: { id: params.id },
+    // 1. Delete associated offers
+    await fetch(`${SUPABASE_URL}/rest/v1/MerchantOffer?productId=eq.${encodeURIComponent(params.id)}`, {
+      method: "DELETE",
+      headers: getHeaders(),
     });
-    return NextResponse.json({ success: true, message: "Product deleted" });
+
+    // 2. Delete associated click logs if any
+    await fetch(`${SUPABASE_URL}/rest/v1/AffiliateClickLog?productId=eq.${encodeURIComponent(params.id)}`, {
+      method: "DELETE",
+      headers: getHeaders(),
+    });
+
+    // 3. Delete product
+    const delRes = await fetch(`${SUPABASE_URL}/rest/v1/Product?id=eq.${encodeURIComponent(params.id)}`, {
+      method: "DELETE",
+      headers: getHeaders(),
+    });
+
+    if (!delRes.ok) {
+      const errText = await delRes.text();
+      console.error("Delete product error:", delRes.status, errText);
+      return NextResponse.json({ error: "Failed to delete product from database" }, { status: 500 });
+    }
+
+    return NextResponse.json({ success: true, message: "Product deleted successfully" });
   } catch (err: any) {
-    console.error("Delete product error:", err);
-    return NextResponse.json({ error: "Failed to delete product" }, { status: 500 });
+    console.error("DELETE product exception:", err);
+    return NextResponse.json({ error: err.message || "Failed to delete product" }, { status: 500 });
   }
 }
