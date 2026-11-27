@@ -2,7 +2,6 @@ import { prisma } from "@/lib/prisma";
 import Link from "next/link";
 import { HeroSlider } from "@/components/home/HeroSlider";
 import { CategoryGrid } from "@/components/home/CategoryGrid";
-import { BrandShowcase } from "@/components/home/BrandShowcase";
 import { TrustSection } from "@/components/home/TrustSection";
 import { BlogPreviewSection } from "@/components/home/BlogPreviewSection";
 import { ProductCard } from "@/components/common/ProductCard";
@@ -492,9 +491,6 @@ export default async function HomePage() {
           ))}
         </div>
       </section>
-
-      {/* 8. Authorized Indian Brand & Merchant Showcase */}
-      <BrandShowcase />
 
       {/* 9. Editorial Buying Guides & Articles */}
       <BlogPreviewSection posts={latestPosts} />
