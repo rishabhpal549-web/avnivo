@@ -194,7 +194,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
       merchantSlug: o.merchant?.slug || "store",
       merchantLogo: o.merchant?.logoUrl || "/merchants/amazon.svg",
       affiliateUrl: o.affiliateUrl?.startsWith("http")
-        ? `/api/affiliate/redirect?offerId=${o.id}`
+        ? `/api/affiliate/redirect?offerId=${o.id}&to=${encodeURIComponent(o.affiliateUrl)}`
         : o.affiliateUrl || "#",
       indicativePrice: o.indicativePrice,
       originalPrice: o.originalPrice,
@@ -226,7 +226,9 @@ export default async function ProductPage({ params }: ProductPageProps) {
       offers: (p.merchantOffers || []).map((o: any) => ({
         merchantName: o.merchant?.name || "Merchant",
         indicativePrice: o.indicativePrice,
-        affiliateUrl: `/api/affiliate/redirect?offerId=${o.id}`,
+        affiliateUrl: o.affiliateUrl?.startsWith("http")
+          ? `/api/affiliate/redirect?offerId=${o.id}&to=${encodeURIComponent(o.affiliateUrl)}`
+          : `/api/affiliate/redirect?offerId=${o.id}`,
       })),
     };
   });

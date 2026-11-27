@@ -1,85 +1,135 @@
 import { NextRequest, NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
-import { getCurrentUser } from "@/lib/auth";
 import crypto from "crypto";
 
 export const dynamic = "force-dynamic";
+
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://ibrzfiwskfhlkfdjbyfv.supabase.co";
+const SUPABASE_KEY =
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY ||
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlicnpmaXdza2ZobGtmZGpieWZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTUyNjY1NjcsImV4cCI6MjExMDg0MjU2N30.XQALfrWAZbazKNZJpbxXAYr9DBr7IUURKE45jjsfF3o";
+
+function getHeaders() {
+  return {
+    apikey: SUPABASE_KEY,
+    Authorization: `Bearer ${SUPABASE_KEY}`,
+    "Content-Type": "application/json",
+  };
+}
 
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
     const offerId = searchParams.get("offerId");
     const productId = searchParams.get("productId");
+    const directTo = searchParams.get("to");
 
-    if (!offerId && !productId) {
-      return NextResponse.redirect(new URL("/shop?notice=invalid_offer", req.url));
+    let targetUrl: string | null = null;
+    let targetOffer: any = null;
+
+    // Check if direct destination URL was passed in query
+    if (directTo) {
+      try {
+        const decoded = decodeURIComponent(directTo);
+        if (decoded.startsWith("http://") || decoded.startsWith("https://")) {
+          targetUrl = decoded;
+        }
+      } catch {}
     }
 
-    let targetOffer = null;
+    // 1. Lookup offer from Supabase REST API
     if (offerId) {
-      targetOffer = await prisma.merchantOffer.findUnique({
-        where: { id: offerId },
-        include: { product: true, merchant: true },
-      });
+      try {
+        const res = await fetch(
+          `${SUPABASE_URL}/rest/v1/MerchantOffer?id=eq.${encodeURIComponent(offerId)}&select=id,productId,merchantId,affiliateUrl,isActive,product:Product(id,name,slug),merchant:Merchant(id,name,slug)`,
+          {
+            headers: getHeaders(),
+            cache: "no-store",
+          }
+        );
+
+        if (res.ok) {
+          const list = await res.json();
+          if (Array.isArray(list) && list.length > 0) {
+            targetOffer = list[0];
+            if (!targetUrl && targetOffer.affiliateUrl && targetOffer.affiliateUrl.startsWith("http")) {
+              targetUrl = targetOffer.affiliateUrl;
+            }
+          }
+        }
+      } catch (e) {
+        console.warn("Offer lookup notice:", e);
+      }
     } else if (productId) {
-      targetOffer = await prisma.merchantOffer.findFirst({
-        where: { productId, isActive: true },
-        orderBy: { indicativePrice: "asc" },
-        include: { product: true, merchant: true },
-      });
+      try {
+        const res = await fetch(
+          `${SUPABASE_URL}/rest/v1/MerchantOffer?productId=eq.${encodeURIComponent(productId)}&isActive=eq.true&select=id,productId,merchantId,affiliateUrl,isActive,product:Product(id,name,slug),merchant:Merchant(id,name,slug)&order=indicativePrice.asc&limit=1`,
+          {
+            headers: getHeaders(),
+            cache: "no-store",
+          }
+        );
+
+        if (res.ok) {
+          const list = await res.json();
+          if (Array.isArray(list) && list.length > 0) {
+            targetOffer = list[0];
+            if (!targetUrl && targetOffer.affiliateUrl && targetOffer.affiliateUrl.startsWith("http")) {
+              targetUrl = targetOffer.affiliateUrl;
+            }
+          }
+        }
+      } catch (e) {
+        console.warn("Product offer lookup notice:", e);
+      }
     }
 
-    if (!targetOffer || !targetOffer.affiliateUrl || targetOffer.affiliateUrl === "#") {
+    // 2. If no valid external URL found, redirect gracefully to product page
+    if (!targetUrl || !targetUrl.startsWith("http") || targetUrl === "#") {
       const fallbackPath = targetOffer?.product?.slug
-        ? `/product/${targetOffer.product.slug}?notice=merchant_url_pending`
-        : "/shop?notice=merchant_url_pending";
-      return NextResponse.redirect(new URL(fallbackPath, req.url));
+        ? `/product/${targetOffer.product.slug}?notice=merchant_link_pending`
+        : "/shop?notice=merchant_link_pending";
+      return NextResponse.redirect(new URL(fallbackPath, req.url), 302);
     }
 
-    // Hash client IP for privacy compliance (GDPR/DPDP Act 2023)
+    // 3. Log outbound click asynchronously via Supabase REST (non-blocking)
     const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "127.0.0.1";
     const ipHash = crypto.createHash("sha256").update(ip).digest("hex").substring(0, 16);
-    const userAgent = req.headers.get("user-agent") || "";
-    const referrer = req.headers.get("referer") || "";
+    const userAgent = (req.headers.get("user-agent") || "").slice(0, 255);
+    const referrer = (req.headers.get("referer") || "").slice(0, 255);
 
-    const user = await getCurrentUser();
+    const logPayload = {
+      productId: targetOffer?.productId || null,
+      merchantOfferId: targetOffer?.id || (offerId || null),
+      merchantId: targetOffer?.merchantId || null,
+      ipHash,
+      userAgent,
+      referrer,
+      utmSource: searchParams.get("utm_source") || "avnivo",
+      utmMedium: searchParams.get("utm_medium") || "affiliate",
+      utmCampaign: searchParams.get("utm_campaign") || "discovery",
+      createdAt: new Date().toISOString(),
+    };
 
-    // Increment click counts asynchronously
-    await Promise.allSettled([
-      prisma.merchantOffer.update({
-        where: { id: targetOffer.id },
-        data: { clickCount: { increment: 1 } },
-      }),
-      prisma.product.update({
-        where: { id: targetOffer.productId },
-        data: { clicksCount: { increment: 1 } },
-      }),
-      prisma.affiliateClickLog.create({
-        data: {
-          productId: targetOffer.productId,
-          merchantOfferId: targetOffer.id,
-          merchantId: targetOffer.merchantId,
-          userId: user ? user.userId : null,
-          ipHash,
-          userAgent: userAgent.slice(0, 255),
-          referrer: referrer.slice(0, 255),
-          utmSource: searchParams.get("utm_source") || "avnivo",
-          utmMedium: searchParams.get("utm_medium") || "affiliate",
-          utmCampaign: searchParams.get("utm_campaign") || "discovery",
-        },
-      }),
-    ]);
+    fetch(`${SUPABASE_URL}/rest/v1/AffiliateClickLog`, {
+      method: "POST",
+      headers: getHeaders(),
+      body: JSON.stringify(logPayload),
+    }).catch(() => {});
 
-    // Check if intermediate transparent disclosure page requested or direct 302 redirect
-    const direct = searchParams.get("direct") !== "false";
-    if (direct) {
-      return NextResponse.redirect(targetOffer.affiliateUrl, 302);
-    }
-
-    // Intermediary page URL
-    return NextResponse.redirect(new URL(`/out/${targetOffer.id}`, req.url));
+    // 4. Redirect directly to the merchant (Amazon, Flipkart, etc.) with HTTP 302
+    return NextResponse.redirect(targetUrl, 302);
   } catch (err: any) {
-    console.error("Affiliate redirect error:", err);
-    return NextResponse.redirect(new URL("/shop?notice=redirect_error", req.url));
+    console.error("Affiliate redirect handler error:", err);
+    // If 'to' param was present, always honor it even in fatal catch
+    const fallbackTo = req.nextUrl?.searchParams?.get("to");
+    if (fallbackTo) {
+      try {
+        const decoded = decodeURIComponent(fallbackTo);
+        if (decoded.startsWith("http://") || decoded.startsWith("https://")) {
+          return NextResponse.redirect(decoded, 302);
+        }
+      } catch {}
+    }
+    return NextResponse.redirect(new URL("/shop", req.url), 302);
   }
 }

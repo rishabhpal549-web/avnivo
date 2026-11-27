@@ -172,7 +172,9 @@ export default async function HomePage() {
       offers: (p.merchantOffers || []).map((o: any) => ({
         merchantName: o.merchant?.name || "Amazon",
         indicativePrice: o.indicativePrice,
-        affiliateUrl: `/api/affiliate/redirect?offerId=${o.id}`,
+        affiliateUrl: o.affiliateUrl?.startsWith("http")
+          ? `/api/affiliate/redirect?offerId=${o.id}&to=${encodeURIComponent(o.affiliateUrl)}`
+          : `/api/affiliate/redirect?offerId=${o.id}`,
       })),
     };
   };
