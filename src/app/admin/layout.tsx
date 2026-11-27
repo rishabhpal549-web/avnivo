@@ -28,6 +28,7 @@ import {
   ChevronRight,
   LogOut,
   ShieldCheck,
+  ShoppingBag,
 } from "lucide-react";
 
 interface NavGroup {
@@ -45,6 +46,7 @@ const NAV_GROUPS: NavGroup[] = [
     groupTitle: "Core Commerce",
     items: [
       { name: "Overview", href: "/admin", icon: LayoutDashboard },
+      { name: "Customer Orders", href: "/admin/orders", icon: ShoppingBag, badge: "New" },
       { name: "Products", href: "/admin/products", icon: Package },
       { name: "Affiliate Offers", href: "/admin/offers", icon: Tag },
       { name: "Categories", href: "/admin/categories", icon: Layers },

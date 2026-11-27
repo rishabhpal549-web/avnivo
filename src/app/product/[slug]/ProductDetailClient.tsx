@@ -24,6 +24,7 @@ import { shareWithFriends } from "@/lib/shareHelper";
 import { MerchantComparisonTable } from "@/components/common/MerchantComparisonTable";
 import { AffiliateDisclosureBanner } from "@/components/common/AffiliateDisclosureBanner";
 import { ProductCard } from "@/components/common/ProductCard";
+import { DirectOrderModal } from "@/components/common/DirectOrderModal";
 import { useWishlist } from "@/components/common/WishlistContext";
 import { useCompare } from "@/components/common/CompareContext";
 
@@ -35,6 +36,7 @@ interface ProductDetailClientProps {
 export function ProductDetailClient({ product, relatedProducts = [] }: ProductDetailClientProps) {
   const [selectedImage, setSelectedImage] = useState(product.images?.[0] || "");
   const [copied, setCopied] = useState(false);
+  const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
 
   const { isInWishlist, toggleWishlist } = useWishlist();
   const { isInCompare, addToCompare } = useCompare();
@@ -213,23 +215,41 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
 
           {/* Action Row: Wishlist, Compare, Direct Buy Now */}
           <div className="pt-5 border-t border-gray-100 space-y-3">
-            <div className="flex flex-wrap items-center gap-3">
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
               {lowestOffer && lowestOffer.affiliateUrl && lowestOffer.affiliateUrl !== "#" ? (
-                <a
-                  href={lowestOffer.affiliateUrl}
-                  target="_blank"
-                  rel="nofollow noopener noreferrer"
-                  className="flex-1 inline-flex items-center justify-center gap-2 bg-secondary hover:bg-secondary-dark text-white font-bold py-3.5 px-6 rounded-xl shadow-lg transition-all group text-sm"
-                >
-                  <ShoppingBag className="w-4 h-4" />
-                  <span>Buy Now on {lowestOffer.merchantName} ({formatINR(lowestOffer.indicativePrice)})</span>
-                  <ExternalLink className="w-4 h-4 group-hover:translate-x-0.5 transition-transform" />
-                </a>
+                <>
+                  <a
+                    href={lowestOffer.affiliateUrl}
+                    target="_blank"
+                    rel="nofollow noopener noreferrer"
+                    className="flex-1 inline-flex items-center justify-center gap-2 bg-secondary hover:bg-secondary-dark text-white font-bold py-3.5 px-5 rounded-xl shadow-md transition-all group text-xs sm:text-sm"
+                  >
+                    <ShoppingBag className="w-4 h-4" />
+                    <span>Buy on {lowestOffer.merchantName} ({formatINR(lowestOffer.indicativePrice)})</span>
+                    <ExternalLink className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                  </a>
+
+                  <button
+                    type="button"
+                    onClick={() => setIsOrderModalOpen(true)}
+                    className="inline-flex items-center justify-center gap-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold py-3.5 px-4 rounded-xl shadow-sm transition-all text-xs"
+                  >
+                    <Truck className="w-4 h-4" />
+                    <span>Order on AVNIVO (COD)</span>
+                  </button>
+                </>
               ) : (
-                <div className="flex-1 inline-flex items-center justify-center gap-2 bg-gray-100 border border-gray-300 text-gray-500 font-bold py-3.5 px-6 rounded-xl text-xs sm:text-sm">
-                  <ShoppingBag className="w-4 h-4 text-gray-400" />
-                  <span>Checking Merchant Availability</span>
-                </div>
+                <button
+                  type="button"
+                  onClick={() => setIsOrderModalOpen(true)}
+                  className="flex-1 inline-flex items-center justify-center gap-2 bg-secondary hover:bg-secondary-dark text-white font-black py-4 px-6 rounded-2xl shadow-xl transition-all text-sm sm:text-base group"
+                >
+                  <ShoppingBag className="w-5 h-5 group-hover:scale-110 transition-transform" />
+                  <span>Buy Now on AVNIVO ({formatINR(product.indicativePrice)})</span>
+                  <span className="text-[10px] font-bold bg-white/20 px-2 py-0.5 rounded-full ml-1">
+                    Cash on Delivery Available
+                  </span>
+                </button>
               )}
 
               <button
@@ -403,6 +423,13 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
           </div>
         </section>
       )}
+
+      {/* Direct Order Modal for AVNIVO Native Checkout */}
+      <DirectOrderModal
+        isOpen={isOrderModalOpen}
+        onClose={() => setIsOrderModalOpen(false)}
+        product={product}
+      />
     </div>
   );
 }
