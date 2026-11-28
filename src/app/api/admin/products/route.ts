@@ -25,7 +25,7 @@ export async function GET() {
   }
 
   try {
-    const endpoint = `${SUPABASE_URL}/rest/v1/Product?select=id,name,slug,description,shortDescription,indicativePrice,originalPrice,discountPercent,rating,reviewCount,isVerifiedRating,images,keyFeatures,specifications,isFeatured,isTrending,isBestDeal,isTopPick,availability,priceLastUpdated,createdAt,updatedAt,categoryId,brandId,category:Category(id,name,nameHindi,slug),brand:Brand(id,name,slug),merchantOffers:MerchantOffer(id,merchantId,indicativePrice,originalPrice,discountPercent,availability,deliveryInfo,lastVerifiedAt,affiliateUrl,merchant:Merchant(id,name,slug,logoUrl))&order=createdAt.desc`;
+    const endpoint = `${SUPABASE_URL}/rest/v1/Product?select=id,name,slug,description,shortDescription,indicativePrice,originalPrice,discountPercent,rating,reviewCount,isVerifiedRating,images,videoUrl,keyFeatures,specifications,isFeatured,isTrending,isBestDeal,isTopPick,availability,priceLastUpdated,createdAt,updatedAt,categoryId,brandId,category:Category(id,name,nameHindi,slug),brand:Brand(id,name,slug),merchantOffers:MerchantOffer(id,merchantId,indicativePrice,originalPrice,discountPercent,availability,deliveryInfo,lastVerifiedAt,affiliateUrl,merchant:Merchant(id,name,slug,logoUrl))&order=createdAt.desc`;
 
     const res = await fetch(endpoint, {
       headers: getHeaders(),
@@ -61,6 +61,7 @@ export async function POST(req: NextRequest) {
       brandId,
       categoryId,
       images,
+      videoUrl,
       indicativePrice,
       originalPrice,
       specifications,
@@ -102,6 +103,7 @@ export async function POST(req: NextRequest) {
       brandId: brandId || null,
       categoryId,
       images: JSON.stringify(Array.isArray(images) ? images : [images || "https://images.unsplash.com/photo-1590794056226-79ef3a8147e1"]),
+      videoUrl: videoUrl || null,
       indicativePrice: numIndicative,
       originalPrice: numOriginal,
       discountPercent,

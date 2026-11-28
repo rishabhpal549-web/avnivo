@@ -18,6 +18,8 @@ import {
   Truck,
   RotateCcw,
   Gift,
+  Play,
+  Video,
 } from "lucide-react";
 import { formatINR, formatTimeAgo } from "@/lib/utils";
 import { shareWithFriends } from "@/lib/shareHelper";
@@ -33,10 +35,22 @@ interface ProductDetailClientProps {
   relatedProducts?: any[];
 }
 
+function getEmbedVideoUrl(url: string) {
+  if (!url) return "";
+  const ytMatch = url.match(
+    /(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=|shorts\/))([\w-]{11})/
+  );
+  if (ytMatch && ytMatch[1]) {
+    return `https://www.youtube-nocookie.com/embed/${ytMatch[1]}?autoplay=1&rel=0`;
+  }
+  return "";
+}
+
 export function ProductDetailClient({ product, relatedProducts = [] }: ProductDetailClientProps) {
   const [selectedImage, setSelectedImage] = useState(product.images?.[0] || "");
   const [copied, setCopied] = useState(false);
   const [isOrderModalOpen, setIsOrderModalOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<"image" | "video">("image");
 
   const { isInWishlist, toggleWishlist } = useWishlist();
   const { isInCompare, addToCompare } = useCompare();
@@ -98,38 +112,109 @@ export function ProductDetailClient({ product, relatedProducts = [] }: ProductDe
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 bg-white rounded-2xl sm:rounded-3xl p-4 sm:p-8 border border-gray-100 shadow-sm mb-10">
         {/* Left: Gallery */}
         <div className="lg:col-span-6 flex flex-col items-center">
+          {/* Photos vs Video Tab Switcher (if video exists) */}
+          {product.videoUrl && (
+            <div className="w-full flex items-center gap-2 mb-3">
+              <button
+                type="button"
+                onClick={() => setViewMode("image")}
+                className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                  viewMode === "image"
+                    ? "bg-primary text-white shadow-sm"
+                    : "bg-surface text-gray-500 hover:text-primary border border-gray-200"
+                }`}
+              >
+                <span>Photos ({product.images?.length || 1})</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setViewMode("video")}
+                className={`flex-1 py-1.5 px-3 rounded-xl text-xs font-bold transition-all flex items-center justify-center gap-1.5 ${
+                  viewMode === "video"
+                    ? "bg-secondary text-white shadow-sm"
+                    : "bg-surface text-gray-500 hover:text-secondary border border-gray-200"
+                }`}
+              >
+                <Play className="w-3.5 h-3.5 fill-current" />
+                <span>Product Video</span>
+              </button>
+            </div>
+          )}
+
           {/* Main Visual Display */}
-          <div className="w-full h-72 sm:h-96 bg-surface rounded-2xl p-4 sm:p-6 flex items-center justify-center border border-gray-200/60 relative overflow-hidden">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={selectedImage}
-              alt={product.name}
-              className="max-h-full max-w-full object-contain transition-all duration-300"
-            />
-            {product.discountPercent > 0 && (
-              <span className="absolute top-3 left-3 bg-red-600 text-white text-xs font-black px-2.5 py-1 rounded-full shadow-sm">
-                SAVE {product.discountPercent}%
-              </span>
+          <div className="w-full h-72 sm:h-96 bg-surface rounded-2xl p-2 sm:p-4 flex items-center justify-center border border-gray-200/60 relative overflow-hidden">
+            {viewMode === "video" && product.videoUrl ? (
+              getEmbedVideoUrl(product.videoUrl) ? (
+                <iframe
+                  src={getEmbedVideoUrl(product.videoUrl)}
+                  className="w-full h-full rounded-xl border-0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                />
+              ) : (
+                <video
+                  src={product.videoUrl}
+                  controls
+                  autoPlay
+                  className="w-full h-full object-contain rounded-xl"
+                />
+              )
+            ) : (
+              <>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={selectedImage}
+                  alt={product.name}
+                  className="max-h-full max-w-full object-contain transition-all duration-300"
+                />
+                {product.discountPercent > 0 && (
+                  <span className="absolute top-3 left-3 bg-red-600 text-white text-xs font-black px-2.5 py-1 rounded-full shadow-sm">
+                    SAVE {product.discountPercent}%
+                  </span>
+                )}
+              </>
             )}
           </div>
 
-          {/* Thumbnails */}
-          {product.images && product.images.length > 1 && (
-            <div className="flex items-center gap-2.5 mt-3 overflow-x-auto py-1">
-              {product.images.map((img: string, idx: number) => (
+          {/* Thumbnails (Images + Video) */}
+          {((product.images && product.images.length > 1) || product.videoUrl) && (
+            <div className="flex items-center gap-2.5 mt-3 overflow-x-auto py-1 max-w-full">
+              {product.images &&
+                product.images.map((img: string, idx: number) => (
+                  <button
+                    key={idx}
+                    type="button"
+                    onClick={() => {
+                      setSelectedImage(img);
+                      setViewMode("image");
+                    }}
+                    className={`w-14 h-14 rounded-xl bg-surface p-1 border transition-all shrink-0 ${
+                      viewMode === "image" && selectedImage === img
+                        ? "border-secondary ring-2 ring-secondary/20"
+                        : "border-gray-200 hover:border-gray-300"
+                    }`}
+                  >
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img src={img} alt="" className="w-full h-full object-contain" />
+                  </button>
+                ))}
+
+              {/* Video Thumbnail Button */}
+              {product.videoUrl && (
                 <button
-                  key={idx}
-                  onClick={() => setSelectedImage(img)}
-                  className={`w-14 h-14 rounded-xl bg-surface p-1 border transition-all shrink-0 ${
-                    selectedImage === img
+                  type="button"
+                  onClick={() => setViewMode("video")}
+                  className={`w-14 h-14 rounded-xl p-1 border transition-all shrink-0 flex flex-col items-center justify-center bg-gray-900 text-white group ${
+                    viewMode === "video"
                       ? "border-secondary ring-2 ring-secondary/20"
-                      : "border-gray-200 hover:border-gray-300"
+                      : "border-gray-300 hover:border-secondary"
                   }`}
+                  title="Watch Product Video"
                 >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src={img} alt="" className="w-full h-full object-contain" />
+                  <Play className="w-5 h-5 fill-white group-hover:scale-110 transition-transform" />
+                  <span className="text-[9px] font-bold mt-0.5">Video</span>
                 </button>
-              ))}
+              )}
             </div>
           )}
         </div>

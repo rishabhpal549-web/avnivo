@@ -119,7 +119,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
         "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImlicnpmaXdza2ZobGtmZGpieWZ2Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTUyNjY1NjcsImV4cCI6MjExMDg0MjU2N30.XQALfrWAZbazKNZJpbxXAYr9DBr7IUURKE45jjsfF3o";
 
       const res = await fetch(
-        `${supabaseUrl}/rest/v1/Product?slug=eq.${encodeURIComponent(params.slug)}&select=id,name,slug,description,shortDescription,indicativePrice,originalPrice,discountPercent,rating,reviewCount,isVerifiedRating,images,keyFeatures,specifications,availability,priceLastUpdated,brand:Brand(name),category:Category(name,slug),merchantOffers:MerchantOffer(id,merchantId,affiliateUrl,indicativePrice,originalPrice,discountPercent,availability,deliveryInfo,lastVerifiedAt,merchant:Merchant(id,name,slug,logoUrl))`,
+        `${supabaseUrl}/rest/v1/Product?slug=eq.${encodeURIComponent(params.slug)}&select=id,name,slug,description,shortDescription,indicativePrice,originalPrice,discountPercent,rating,reviewCount,isVerifiedRating,images,videoUrl,keyFeatures,specifications,availability,priceLastUpdated,brand:Brand(name),category:Category(name,slug),merchantOffers:MerchantOffer(id,merchantId,affiliateUrl,indicativePrice,originalPrice,discountPercent,availability,deliveryInfo,lastVerifiedAt,merchant:Merchant(id,name,slug,logoUrl))`,
         {
           headers: {
             apikey: supabaseKey,
@@ -177,6 +177,7 @@ export default async function ProductPage({ params }: ProductPageProps) {
     parentCategoryName: product.category?.parent?.name || null,
     parentCategorySlug: product.category?.parent?.slug || null,
     images,
+    videoUrl: product.videoUrl || null,
     indicativePrice: product.indicativePrice,
     originalPrice: product.originalPrice,
     discountPercent: product.discountPercent,

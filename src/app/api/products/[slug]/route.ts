@@ -47,7 +47,7 @@ export async function GET(
     if (!product) {
       try {
         const res = await fetch(
-          `${SUPABASE_URL}/rest/v1/Product?slug=eq.${encodeURIComponent(slug)}&select=id,name,slug,description,shortDescription,indicativePrice,originalPrice,discountPercent,rating,reviewCount,isVerifiedRating,images,keyFeatures,specifications,availability,priceLastUpdated,brand:Brand(name),category:Category(name,slug),merchantOffers:MerchantOffer(id,merchantId,affiliateUrl,indicativePrice,originalPrice,discountPercent,availability,deliveryInfo,lastVerifiedAt,merchant:Merchant(id,name,slug,logoUrl))`,
+          `${SUPABASE_URL}/rest/v1/Product?slug=eq.${encodeURIComponent(slug)}&select=id,name,slug,description,shortDescription,indicativePrice,originalPrice,discountPercent,rating,reviewCount,isVerifiedRating,images,videoUrl,keyFeatures,specifications,availability,priceLastUpdated,brand:Brand(name),category:Category(name,slug),merchantOffers:MerchantOffer(id,merchantId,affiliateUrl,indicativePrice,originalPrice,discountPercent,availability,deliveryInfo,lastVerifiedAt,merchant:Merchant(id,name,slug,logoUrl))`,
           {
             headers: getHeaders(),
             cache: "no-store",
@@ -103,6 +103,7 @@ export async function GET(
       parentCategoryName: product.category?.parent?.name || null,
       parentCategorySlug: product.category?.parent?.slug || null,
       images,
+      videoUrl: product.videoUrl || null,
       indicativePrice: product.indicativePrice,
       originalPrice: product.originalPrice,
       discountPercent: product.discountPercent,

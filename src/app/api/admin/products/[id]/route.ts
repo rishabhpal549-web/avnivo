@@ -27,7 +27,7 @@ export async function GET(
   }
 
   try {
-    const endpoint = `${SUPABASE_URL}/rest/v1/Product?id=eq.${encodeURIComponent(params.id)}&select=id,name,slug,description,shortDescription,indicativePrice,originalPrice,discountPercent,rating,reviewCount,isVerifiedRating,images,keyFeatures,specifications,isFeatured,isTrending,isBestDeal,isTopPick,availability,priceLastUpdated,createdAt,updatedAt,categoryId,brandId,category:Category(id,name,nameHindi,slug),brand:Brand(id,name,slug),merchantOffers:MerchantOffer(id,merchantId,indicativePrice,originalPrice,discountPercent,availability,deliveryInfo,lastVerifiedAt,affiliateUrl,merchant:Merchant(id,name,slug,logoUrl))`;
+    const endpoint = `${SUPABASE_URL}/rest/v1/Product?id=eq.${encodeURIComponent(params.id)}&select=id,name,slug,description,shortDescription,indicativePrice,originalPrice,discountPercent,rating,reviewCount,isVerifiedRating,images,videoUrl,keyFeatures,specifications,isFeatured,isTrending,isBestDeal,isTopPick,availability,priceLastUpdated,createdAt,updatedAt,categoryId,brandId,category:Category(id,name,nameHindi,slug),brand:Brand(id,name,slug),merchantOffers:MerchantOffer(id,merchantId,indicativePrice,originalPrice,discountPercent,availability,deliveryInfo,lastVerifiedAt,affiliateUrl,merchant:Merchant(id,name,slug,logoUrl))`;
 
     const res = await fetch(endpoint, {
       headers: getHeaders(),
@@ -69,6 +69,7 @@ export async function PUT(
       indicativePrice,
       originalPrice,
       images,
+      videoUrl,
       availability,
       isFeatured,
       isTrending,
@@ -101,6 +102,7 @@ export async function PUT(
     if (images !== undefined) {
       updateData.images = JSON.stringify(Array.isArray(images) ? images : [images]);
     }
+    if (videoUrl !== undefined) updateData.videoUrl = videoUrl || null;
     if (availability !== undefined) updateData.availability = availability;
     if (isFeatured !== undefined) updateData.isFeatured = Boolean(isFeatured);
     if (isTrending !== undefined) updateData.isTrending = Boolean(isTrending);

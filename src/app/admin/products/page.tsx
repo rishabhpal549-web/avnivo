@@ -22,6 +22,10 @@ import {
   RefreshCw,
   CheckCircle2,
   Copy,
+  Play,
+  Video,
+  Film,
+  Image as ImageIcon,
 } from "lucide-react";
 
 interface MerchantItem {
@@ -66,7 +70,9 @@ export default function AdminProductsPage() {
   const [categoryId, setCategoryId] = useState("");
   const [indicativePrice, setIndicativePrice] = useState("");
   const [originalPrice, setOriginalPrice] = useState("");
-  const [imageUrl, setImageUrl] = useState("");
+  const [imageUrls, setImageUrls] = useState<string[]>([]);
+  const [singleUrlInput, setSingleUrlInput] = useState("");
+  const [videoUrl, setVideoUrl] = useState("");
   const [description, setDescription] = useState("");
   const [shortDescription, setShortDescription] = useState("");
   const [availability, setAvailability] = useState("IN_STOCK"); // IN_STOCK or UNPUBLISHED
@@ -78,13 +84,18 @@ export default function AdminProductsPage() {
   // Merchant Offers
   const [offers, setOffers] = useState<OfferFormData[]>([]);
   const [uploadingImage, setUploadingImage] = useState(false);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
   const [uploadError, setUploadError] = useState("");
+  const [videoUploadError, setVideoUploadError] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [formError, setFormError] = useState("");
   const [successMessage, setSuccessMessage] = useState("");
   const [pageError, setPageError] = useState("");
 
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const videoInputRef = useRef<HTMLInputElement>(null);
+
+  const imageUrl = imageUrls[0] || "";
 
   const fetchProducts = () => {
     setLoading(true);
@@ -140,7 +151,9 @@ export default function AdminProductsPage() {
     setCategoryId(categories[0]?.id || "");
     setIndicativePrice("");
     setOriginalPrice("");
-    setImageUrl("");
+    setImageUrls([]);
+    setSingleUrlInput("");
+    setVideoUrl("");
     setDescription("");
     setShortDescription("");
     setAvailability("IN_STOCK");
@@ -150,6 +163,7 @@ export default function AdminProductsPage() {
     setIsTopPick(false);
     setFormError("");
     setUploadError("");
+    setVideoUploadError("");
 
     // Initialize default merchant offers for Amazon, Flipkart, Meesho
     const defaultOffers: OfferFormData[] = (merchants.length > 0 ? merchants : [
@@ -181,14 +195,16 @@ export default function AdminProductsPage() {
     setIndicativePrice(String(p.indicativePrice || ""));
     setOriginalPrice(String(p.originalPrice || ""));
 
-    let img = "";
+    let imgs: string[] = [];
     try {
       const arr = JSON.parse(p.images);
-      img = arr[0] || "";
+      imgs = Array.isArray(arr) ? arr : [arr];
     } catch {
-      img = p.images || "";
+      imgs = p.images ? [p.images] : [];
     }
-    setImageUrl(img);
+    setImageUrls(imgs.slice(0, 6));
+    setSingleUrlInput("");
+    setVideoUrl(p.videoUrl || "");
     setDescription(p.description || "");
     setShortDescription(p.shortDescription || "");
     setAvailability(p.availability || "IN_STOCK");
@@ -229,25 +245,97 @@ export default function AdminProductsPage() {
   };
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = Array.from(e.target.files || []);
+    if (files.length === 0) return;
 
     setUploadError("");
 
-    // Client-side MIME validation
-    const validTypes = ["image/jpeg", "image/png", "image/webp", "image/jpg"];
-    if (!validTypes.includes(file.type.toLowerCase())) {
-      setUploadError("Only JPG, JPEG, PNG, and WEBP formats are supported.");
+    if (imageUrls.length >= 6) {
+      setUploadError("You already have 6 images (maximum limit). Remove an image to add a new one.");
       return;
     }
 
-    // Client-side size validation (max 5 MB)
-    if (file.size > 5 * 1024 * 1024) {
-      setUploadError(`File size (${(file.size / (1024 * 1024)).toFixed(1)} MB) exceeds the 5 MB limit.`);
-      return;
-    }
+    const availableSlots = 6 - imageUrls.length;
+    const filesToUpload = files.slice(0, availableSlots);
 
     setUploadingImage(true);
+    try {
+      const uploadedUrls: string[] = [];
+      for (const file of filesToUpload) {
+        if (file.size > 15 * 1024 * 1024) {
+          setUploadError(`File ${file.name} exceeds 15 MB limit.`);
+          continue;
+        }
+
+        const formData = new FormData();
+        formData.append("file", file);
+
+        const res = await fetch("/api/upload", {
+          method: "POST",
+          body: formData,
+        });
+
+        const data = await res.json();
+        if (res.ok && data.url) {
+          uploadedUrls.push(data.url);
+        } else {
+          setUploadError(data.error || "Failed to upload one or more images.");
+        }
+      }
+
+      if (uploadedUrls.length > 0) {
+        setImageUrls((prev) => [...prev, ...uploadedUrls].slice(0, 6));
+        setUploadError("");
+      }
+    } catch {
+      setUploadError("Network error while uploading image. Please try again.");
+    } finally {
+      setUploadingImage(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
+
+  const handleAddImageUrl = () => {
+    const url = singleUrlInput.trim();
+    if (!url) return;
+
+    if (imageUrls.length >= 6) {
+      setUploadError("Maximum 6 images allowed per product.");
+      return;
+    }
+
+    setImageUrls((prev) => [...prev, url].slice(0, 6));
+    setSingleUrlInput("");
+    setUploadError("");
+  };
+
+  const handleRemoveImage = (index: number) => {
+    setImageUrls((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleSetCoverImage = (index: number) => {
+    if (index === 0) return;
+    setImageUrls((prev) => {
+      const copy = [...prev];
+      const [item] = copy.splice(index, 1);
+      return [item, ...copy];
+    });
+  };
+
+  const handleVideoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setVideoUploadError("");
+
+    if (file.size > 50 * 1024 * 1024) {
+      setVideoUploadError(`Video size (${(file.size / (1024 * 1024)).toFixed(1)} MB) exceeds 50 MB limit.`);
+      return;
+    }
+
+    setUploadingVideo(true);
     try {
       const formData = new FormData();
       formData.append("file", file);
@@ -259,17 +347,17 @@ export default function AdminProductsPage() {
 
       const data = await res.json();
       if (res.ok && data.url) {
-        setImageUrl(data.url);
-        setUploadError("");
+        setVideoUrl(data.url);
+        setVideoUploadError("");
       } else {
-        setUploadError(data.error || "Failed to upload image.");
+        setVideoUploadError(data.error || "Failed to upload video.");
       }
     } catch {
-      setUploadError("Network error while uploading image. Please try again.");
+      setVideoUploadError("Network error while uploading video. Please try again.");
     } finally {
-      setUploadingImage(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
+      setUploadingVideo(false);
+      if (videoInputRef.current) {
+        videoInputRef.current.value = "";
       }
     }
   };
@@ -383,12 +471,20 @@ export default function AdminProductsPage() {
       (o) => o.affiliateUrl && o.affiliateUrl.trim().length > 0 && o.indicativePrice
     );
 
+    const finalImages =
+      imageUrls.length > 0
+        ? imageUrls
+        : singleUrlInput.trim()
+        ? [singleUrlInput.trim()]
+        : ["https://images.unsplash.com/photo-1590794056226-79ef3a8147e1?w=600&auto=format&fit=crop&q=80"];
+
     const payload = {
       name,
       categoryId,
       indicativePrice: parseFloat(indicativePrice),
       originalPrice: originalPrice ? parseFloat(originalPrice) : parseFloat(indicativePrice),
-      images: [imageUrl || "https://images.unsplash.com/photo-1590794056226-79ef3a8147e1?w=600&auto=format&fit=crop&q=80"],
+      images: finalImages,
+      videoUrl: videoUrl.trim() || null,
       description: description || name,
       shortDescription,
       availability,
@@ -789,25 +885,46 @@ export default function AdminProductsPage() {
                 </div>
               </div>
 
-              {/* Image Upload & URL */}
-              <div>
-                <label className="block text-[11px] font-bold text-gray-600 uppercase mb-1">
-                  Product Image (Upload File or Enter URL)
-                </label>
-                <div className="flex items-center gap-2">
-                  <input
-                    type="url"
-                    value={imageUrl}
-                    onChange={(e) => {
-                      setImageUrl(e.target.value);
-                      if (uploadError) setUploadError("");
-                    }}
-                    placeholder="https://... or click Upload Image button"
-                    className="flex-1 px-3.5 py-2.5 rounded-xl border border-gray-200 text-xs focus:border-secondary outline-none"
-                  />
+              {/* Multi-Image Upload (Up to 6 Photos) */}
+              <div className="bg-surface p-4 rounded-2xl border border-gray-200/80 space-y-3">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div>
+                    <label className="block text-[11px] font-bold text-gray-700 uppercase">
+                      Product Photos (Upload up to 6 Photos)
+                    </label>
+                    <p className="text-[10px] text-gray-400">
+                      Upload multiple angles: Front, Back, Features, Packaging. ({imageUrls.length}/6 photos added)
+                    </p>
+                  </div>
+                  <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-blue-50 text-secondary border border-blue-200">
+                    {imageUrls.length} of 6 Added
+                  </span>
+                </div>
+
+                {/* Upload Buttons & URL Input */}
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                  <div className="flex-1 flex items-center gap-2">
+                    <input
+                      type="url"
+                      value={singleUrlInput}
+                      onChange={(e) => setSingleUrlInput(e.target.value)}
+                      placeholder="Paste image URL (https://...) and click Add"
+                      className="flex-1 px-3.5 py-2.5 rounded-xl border border-gray-300 text-xs focus:border-secondary outline-none bg-white"
+                    />
+                    <button
+                      type="button"
+                      onClick={handleAddImageUrl}
+                      disabled={!singleUrlInput.trim() || imageUrls.length >= 6}
+                      className="px-3.5 py-2.5 bg-gray-800 text-white hover:bg-black rounded-xl text-xs font-semibold shadow-sm transition-all shrink-0 disabled:opacity-40"
+                    >
+                      Add URL
+                    </button>
+                  </div>
+
                   <input
                     ref={fileInputRef}
                     type="file"
+                    multiple
                     accept="image/jpeg,image/png,image/webp,image/jpg"
                     onChange={handleFileUpload}
                     className="hidden"
@@ -815,52 +932,156 @@ export default function AdminProductsPage() {
                   <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    disabled={uploadingImage}
-                    className="inline-flex items-center gap-1.5 px-3.5 py-2.5 bg-secondary text-white hover:bg-secondary/90 rounded-xl text-xs font-semibold shadow-sm transition-all shrink-0 disabled:opacity-50"
+                    disabled={uploadingImage || imageUrls.length >= 6}
+                    className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-secondary text-white hover:bg-secondary/90 rounded-xl text-xs font-semibold shadow-sm transition-all shrink-0 disabled:opacity-50"
                   >
                     <Upload className="w-3.5 h-3.5" />
-                    <span>{uploadingImage ? "Uploading..." : "Upload Image"}</span>
+                    <span>{uploadingImage ? "Uploading..." : "Upload Photos"}</span>
                   </button>
                 </div>
 
-                <div className="flex items-center justify-between mt-1 text-[11px] text-gray-400">
-                  <span>Supported: JPG, PNG, WEBP (Max 5MB)</span>
-                  {imageUrl && (
-                    <span className="text-green-600 font-medium flex items-center gap-1">
-                      <Check className="w-3 h-3" /> Image saved & ready
-                    </span>
-                  )}
-                </div>
-
                 {uploadError && (
-                  <div className="mt-2 p-2.5 bg-red-50 border border-red-200 rounded-xl text-xs text-red-600 flex items-center gap-2">
+                  <div className="p-2.5 bg-red-50 border border-red-200 rounded-xl text-xs text-red-600 flex items-center gap-2">
                     <AlertCircle className="w-4 h-4 shrink-0" />
                     <span>{uploadError}</span>
                   </div>
                 )}
 
-                {imageUrl && (
-                  <div className="mt-2.5 p-2.5 bg-gray-50 border border-gray-200 rounded-xl flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-2.5 min-w-0">
-                      {/* eslint-disable-next-line @next/next/no-img-element */}
-                      <img
-                        src={imageUrl}
-                        alt="Preview"
-                        className="w-12 h-12 rounded-lg object-contain bg-white border p-1 shrink-0"
-                      />
-                      <div className="min-w-0">
-                        <p className="text-[11px] font-bold text-gray-700 truncate">Image Preview</p>
-                        <p className="text-[10px] text-gray-400 truncate max-w-xs">{imageUrl}</p>
+                {/* Image Thumbnails Gallery Grid */}
+                {imageUrls.length > 0 && (
+                  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-2.5 pt-2">
+                    {imageUrls.map((url, idx) => (
+                      <div
+                        key={idx}
+                        className={`relative rounded-xl border p-1 bg-white flex flex-col items-center justify-between group overflow-hidden ${
+                          idx === 0 ? "border-secondary ring-2 ring-secondary/20" : "border-gray-200"
+                        }`}
+                      >
+                        <div className="w-full h-20 flex items-center justify-center bg-gray-50 rounded-lg overflow-hidden">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={url}
+                            alt={`Photo ${idx + 1}`}
+                            className="w-full h-full object-contain"
+                          />
+                        </div>
+
+                        {/* Top Badges */}
+                        <div className="absolute top-1.5 left-1.5 right-1.5 flex items-center justify-between">
+                          {idx === 0 ? (
+                            <span className="text-[8px] font-extrabold bg-secondary text-white px-1.5 py-0.5 rounded shadow">
+                              ★ COVER
+                            </span>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={() => handleSetCoverImage(idx)}
+                              className="text-[8px] font-bold bg-black/60 hover:bg-secondary text-white px-1.5 py-0.5 rounded opacity-0 group-hover:opacity-100 transition-opacity"
+                              title="Set as Main Cover Photo"
+                            >
+                              Make Cover
+                            </button>
+                          )}
+
+                          <button
+                            type="button"
+                            onClick={() => handleRemoveImage(idx)}
+                            className="w-5 h-5 rounded-full bg-red-600 text-white flex items-center justify-center hover:bg-red-700 transition-colors shadow"
+                            title="Remove Photo"
+                          >
+                            <X className="w-3 h-3" />
+                          </button>
+                        </div>
+
+                        <span className="text-[9px] text-gray-400 mt-1">Photo {idx + 1}</span>
                       </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+
+              {/* Product Video Upload & URL */}
+              <div className="bg-surface p-4 rounded-2xl border border-gray-200/80 space-y-3">
+                <div className="flex items-center justify-between flex-wrap gap-2">
+                  <div>
+                    <label className="block text-[11px] font-bold text-gray-700 uppercase flex items-center gap-1.5">
+                      <Film className="w-3.5 h-3.5 text-secondary" />
+                      Product Video (Upload Video or Paste YouTube / Reel Link)
+                    </label>
+                    <p className="text-[10px] text-gray-400">
+                      Add a 15-60 second video showing how the product works or unboxing.
+                    </p>
+                  </div>
+                  {videoUrl && (
+                    <span className="text-[10px] font-extrabold px-2 py-0.5 rounded-full bg-green-50 text-green-700 border border-green-200 flex items-center gap-1">
+                      <Check className="w-3 h-3" /> Video Attached
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+                  <input
+                    type="url"
+                    value={videoUrl}
+                    onChange={(e) => {
+                      setVideoUrl(e.target.value);
+                      if (videoUploadError) setVideoUploadError("");
+                    }}
+                    placeholder="e.g. https://www.youtube.com/watch?v=... or direct .mp4 link"
+                    className="flex-1 px-3.5 py-2.5 rounded-xl border border-gray-300 text-xs focus:border-secondary outline-none bg-white"
+                  />
+
+                  <input
+                    ref={videoInputRef}
+                    type="file"
+                    accept="video/mp4,video/webm,video/quicktime"
+                    onChange={handleVideoUpload}
+                    className="hidden"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => videoInputRef.current?.click()}
+                    disabled={uploadingVideo}
+                    className="inline-flex items-center justify-center gap-1.5 px-4 py-2.5 bg-gray-900 text-white hover:bg-black rounded-xl text-xs font-semibold shadow-sm transition-all shrink-0 disabled:opacity-50"
+                  >
+                    <Video className="w-3.5 h-3.5" />
+                    <span>{uploadingVideo ? "Uploading Video..." : "Upload MP4 Video"}</span>
+                  </button>
+                </div>
+
+                {videoUploadError && (
+                  <div className="p-2.5 bg-red-50 border border-red-200 rounded-xl text-xs text-red-600 flex items-center gap-2">
+                    <AlertCircle className="w-4 h-4 shrink-0" />
+                    <span>{videoUploadError}</span>
+                  </div>
+                )}
+
+                {/* Video Preview */}
+                {videoUrl && (
+                  <div className="p-3 bg-white border border-gray-200 rounded-xl flex flex-col sm:flex-row items-center gap-3">
+                    <div className="w-full sm:w-48 h-28 bg-black rounded-lg overflow-hidden shrink-0 flex items-center justify-center">
+                      {videoUrl.includes("youtube.com") || videoUrl.includes("youtu.be") ? (
+                        <div className="text-white text-center p-2">
+                          <Play className="w-6 h-6 mx-auto mb-1 text-red-500 fill-red-500" />
+                          <span className="text-[10px] font-bold block">YouTube Video Linked</span>
+                        </div>
+                      ) : (
+                        <video src={videoUrl} controls className="w-full h-full object-cover" />
+                      )}
                     </div>
-                    <button
-                      type="button"
-                      onClick={() => setImageUrl("")}
-                      className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors shrink-0"
-                      title="Remove image"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
+
+                    <div className="flex-1 min-w-0 space-y-1">
+                      <p className="text-xs font-bold text-primary truncate">Product Video Ready</p>
+                      <p className="text-[10px] text-gray-400 truncate max-w-sm">{videoUrl}</p>
+                      <button
+                        type="button"
+                        onClick={() => setVideoUrl("")}
+                        className="inline-flex items-center gap-1 text-[11px] text-red-600 hover:text-red-700 font-semibold pt-1"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                        <span>Remove Video</span>
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
